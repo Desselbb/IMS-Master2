@@ -1,0 +1,359 @@
+@page "/departments"
+@using IMSClassLibrary.Models;
+@using IMSClassLibrary.Repos;
+@using IMS.Pages;
+@inject UserRepository userRepository
+@inject DepartmentRepository departmentRepository
+@inject ModuleRepository moduleRepository
+@inject Authorisation authorisation
+@inject NotificationService NotificationService;
+@inject NavigationManager UriHelper
+@inject IHttpContextAccessor httpContextAccessor;
+
+
+@inject IJSRuntime js
+
+<PageTitle>Departments</PageTitle>
+<!--breadcrumb-->
+ <div class="container-fluid">
+    <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3"></div>
+        <nav aria-label="breadcrumb">
+        <ul class="dot-group pb-3 pt-0">
+            <li class="breadcrumb-item">
+                    <a href="javascript:;"><i class="bx bx-home-alt"></i></a></li>
+            <li class="breadcrumb-item active" aria-current="page"> </li>
+            <li></li>
+        </ul>
+        </nav>
+	<div class="ms-auto">
+        <div class="overflow-hidden">
+            <div class="btn-group">
+                
+                    <button class="btn btn-primary mx-auto mt-3" @onclick="ShowModal" type="button" data-bs-toggle="modal" data-bs-target="#exampleModallogin">Add</button>
+             </div>
+        </div>
+    </div>
+        <div class="modal fade" id="exampleModallogin" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content dark-sign-up">
+                    <div class="modal-body social-profile text-start">
+                        <div class="modal-toggle-wrapper">
+
+                            <h3>Add Department</h3>
+                            <p>
+                                Fill in your information below.
+                            </p>
+                            <EditForm Model="@department" OnValidSubmit="saveDepartment" class="row g-3">
+
+
+                                <div class="col-md-12"> 
+                                    <label for="name" class="form-label">Department Name</label>
+                                    <InputText id="name" class="form-control" @bind-Value="department.Name" /> 
+                                </div>
+
+
+                                <div class="col-12">
+                                    <button class="btn btn-primary" type="submit" >Submit </button>
+                                </div>
+
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<!--end breadcrumb-->
+
+
+<div class="col-sm-12">
+    <div class="card">
+        <div class="card-header">
+            <h4>Departments</h4>
+        </div>
+        <div class="table-responsive custom-scrollbar">
+            <table class="table">
+                <thead>
+                    <tr class="border-bottom-primary">
+                        <th scope="col">Id</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                 <tbody>
+                    @{
+                        int count = 1;
+                    }
+                    @foreach (var dep in departments)
+                    {
+                        <tr class="border-bottom-success">
+                            <td>@count</td>
+                            <td>@dep.Name</td>
+                            <td> @dep.Status </td>
+                            <td>
+                                <a href="#" title="Edit"  @onclick="@(()=>editDepartment(dep))" class="edit">
+                                        <i data-feather="edit-3"></i>
+                                </a>
+                                    <a href="#" title="Delete" @onclick="@(()=>deleteDepartment(dep))" class="delete" data-bs-toggle="modal" data-bs-target="#exampleModallogin2">
+                                        <i data-feather="trash-2"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                    </tbody>
+                   
+            </table>
+        </div>
+    </div>
+</div>
+
+
+  <div class="modal fade" id="exampleModallogin2" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin2" aria-hidden="true">
+       <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-sign-up">
+
+                    <div class="modal-toggle-wrapper">
+                <h5 class="modal-title" id="exampleModalLongTitle"> <i class="lni lni-trash"></i> Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body social-profile text-start">
+                <label>Are you sure you want to delete this Department?</label>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="lni lni-close"></i> Close</button>
+                <button @onclick="completeDelete" type="button" class="btn btn-danger"><i class="lni lni-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</div>
+
+
+
+
+
+@code
+
+{
+    private Department department = new Department();
+
+    private List<Department> departments = new List<Department>();
+
+    private bool isEditing = false;
+
+    private string modalTitle = "Add Department";
+
+
+
+    protected override void OnInitialized()
+
+    {
+
+        base.OnInitialized();
+
+        LoadDepartments();
+
+
+    }
+
+
+
+    private void LoadDepartments()
+
+    {
+
+        var result = departmentRepository.GetAll();
+
+        if (result.IsSuccessful)
+
+        {
+
+            departments = result.Data;
+
+        }
+
+        else
+
+        {
+
+            NotificationService.ShowError("Could not load departments.");
+
+        }
+
+    }
+
+
+
+    
+
+    private void saveDepartment()
+
+    {
+
+        ResultObject<Department> result;
+
+
+
+      try
+       {
+
+            if (isEditing)
+
+        {
+
+            result = departmentRepository.Update(department);
+
+        }
+
+        else
+
+        {
+
+            result = departmentRepository.Add(department);
+
+        }
+
+
+
+        if (result.IsSuccessful)
+
+        {
+
+            NotificationService.ShowSuccess(result.Message);
+
+            LoadDepartments();
+
+            ResetForm();
+
+            CloseModal("exampleModallogin");
+
+        }
+
+        else
+
+        {
+
+            NotificationService.ShowError(result.Message);
+
+        }
+       }catch (Exception ex) { 
+         NotificationService.ShowError("An unexpected error occurred: " + ex.Message);
+         Console.WriteLine(ex.ToString()); }
+
+}
+
+
+
+    private void editDepartment(Department dept)
+
+    {
+
+        isEditing = true;
+
+        modalTitle = "Edit Department";
+
+        department = dept;
+
+        ShowModal();
+
+    }
+
+
+
+    private void deleteDepartment(Department dept)
+
+    {
+
+        department = dept;
+
+        ShowModal();
+
+    }
+
+
+
+    private void completeDelete()
+
+    {
+
+        var result = departmentRepository.DeleteById(department.Id);
+
+        if (result.IsSuccessful)
+
+        {
+
+            NotificationService.ShowSuccess(result.Message);
+
+            LoadDepartments();
+
+            CloseModal("exampleModallogin2");
+
+        }
+
+        else
+
+        {
+
+            NotificationService.ShowError(result.Message);
+
+        }
+
+    }
+
+
+
+    private void ResetForm()
+
+    {
+
+        isEditing = false;
+
+        modalTitle = "Add Department";
+
+        department = new Department
+
+            {
+
+                CreatedBy = " ",
+
+                ModifiedBy = " ",
+
+                Status = "active"
+
+            };
+
+    }
+
+
+
+
+
+    private void ShowModal()
+    { // Use JavaScript interop to show the modal 
+        js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
+    }
+
+
+        private void ShowModal2()
+    { // Use JavaScript interop to show the modal 
+        js.InvokeVoidAsync("$('#exampleModallogin2').modal", "show");
+    }
+
+
+        private void CloseModal(string modalId)
+
+    {
+
+        js.InvokeVoidAsync($"$('#{modalId}').modal", "hide");
+
+    }
+}

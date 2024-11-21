@@ -1,0 +1,129 @@
+﻿
+
+
+
+
+
+
+
+
+
+@using IMSClassLibrary.Models;
+@using IMSClassLibrary.Repos;
+@using Microsoft.AspNetCore.Http
+@inject NavigationManager UriHelper
+@inject UserRepository userRepository
+@inject NotificationService NotificationService;
+@inject IHttpContextAccessor httpContextAccessor
+@layout LoginLayout
+
+
+@page "/"
+
+<PageTitle>Login</PageTitle>
+
+<div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3">
+					<div class="col mx-auto">
+						<div class="card rounded-4">
+							<div class="card-body">
+								<div class="border p-4 rounded-4">
+									<div class="text-center">
+										<img src="assets/images/logo-icon.png" width="70" alt="" />
+                    <h3>Intern Information System</h3>
+                    <h4>Login</h4>
+
+
+                  </div>
+
+					 <EditForm Model="@user" OnValidSubmit="@login" class="row g-3">
+                       <div class="col-md-12">
+                          <label class="form-label" for="inputEmail4">Email</label>
+                          <InputText class="form-control"  @bind-Value="user.Email" id="inputEmail4" type="email" placeholder="Enter Your Email" />
+
+                        </div>
+                        <div class="col-md-12">
+                          <label class="form-label" for="inputPassword4">Password</label>
+                          <InputText class="form-control" @bind-Value="user.Password" id="inputPassword4" type="password" placeholder="Enter Your Password" />
+                        </div>
+			           <div class="col-md-6">
+				         <div class="form-check form-switch">
+						 <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
+						 <label class="form-check-label" for="flexSwitchCheckChecked">Remember Me</label>
+						 </div>
+					</div>
+
+                        <div class="col-12">
+                          <button class="btn btn-primary" type="submit">Sign in </button>
+                        </div>
+              </EditForm>
+                    </div>
+                  </div>
+                </div>
+              </div>	
+</div>	
+				
+										
+
+			
+				<!--end row-->
+					
+
+@code
+{
+	
+	User user = new User()
+		{
+			CreatedBy="",
+			ModifiedBy="",
+			CreatedDate =DateTime.Now,
+			ModifiedDate =DateTime.Now,
+			FirstName ="",
+			LastName=""
+
+	};
+
+	
+	protected override void OnInitialized()
+	{
+
+		base.OnInitialized();
+
+		resetUser();
+	}
+
+
+	private void resetUser()
+	{
+		user = new User()
+		{
+			CreatedBy="",
+			ModifiedBy="",
+			CreatedDate =DateTime.Now,
+			ModifiedDate =DateTime.Now,
+			FirstName ="",
+			LastName=""
+
+		};
+	}
+
+	private  void login()
+	{
+		var result = userRepository.Get(user.Email);
+		if (result.IsSuccessful)
+		{
+			httpContextAccessor.HttpContext.Session.SetString("email", user.Email);
+			NotificationService.ShowSuccess("Logged in as "+user.Email);
+			UriHelper.NavigateTo("home");
+		}
+		else
+		{
+			resetUser();
+			NotificationService.ShowError("Could not login, Username or Password is incorrect");
+		}
+	}
+
+
+
+
+	
+}

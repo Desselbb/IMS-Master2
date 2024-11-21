@@ -1,0 +1,260 @@
+﻿
+
+@page "/projects"
+@using IMSClassLibrary.Models;
+@using IMSClassLibrary.Repos;
+@inject UserRepository userRepository
+@inject ProjectRepository projectRepository
+@inject ModuleRepository moduleRepository
+@inject Authorisation authorisation
+@inject NotificationService NotificationService;
+@inject NavigationManager UriHelper
+@inject IHttpContextAccessor httpContextAccessor
+
+
+@inject IJSRuntime js
+
+<PageTitle>Projects</PageTitle>
+<!--breadcrumb-->
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <div class="breadcrumb-title pe-3">@parentPage.Name</div>
+    <div class="ps-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 p-0">
+                <li class="breadcrumb-item">
+                    <a href="_Layout"><i class="bx bx-home-alt"></i></a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@thisPage.Name</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="ms-auto">
+        <div class="btn-group"> 
+            <button type="button" @onclick="@(() => openModal("addMenuModal"))" class="btn btn-primary">
+                <i class="lni lni-plus"></i> Add Project </button>
+                </div>
+                </div>
+</div>
+<!--end breadcrumb-->
+
+
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="example2" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Department Name</th>
+                        <th>Unit Name</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int count = 1;
+                    }
+                    @foreach (var dep in projects)
+                    {
+                        <tr>
+                            <td>@count</td>
+                            <td>@dep.Name</td>
+                            <td> @dep.Status </td>
+                            <td>
+                                <button title="Edit" type="button" @onclick="@(()=>editProject(dep))" class="btn btn-outline-primary">
+                                    <i class="bx bx-edit me-0"></i>
+                                </button>
+                                <button title="Delete" type="button" @onclick="@(()=>deleteProject(dep))" class="btn btn-outline-danger">
+                                    <i class="bx bx-trash me-0"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="deleteMenuModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle"> <i class="lni lni-trash"></i> Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <label>Are you sure you want to delete this Department?</label>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="lni lni-close"></i> Close</button>
+                <button @onclick="completeDelete" type="button" class="btn btn-danger"><i class="lni lni-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="addMenuModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">@modalTitle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <EditForm Model="@project" OnValidSubmit="saveProject">
+                <div class="modal-body">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label>Department Name</label>
+                        <InputText @bind-Value="project.Name" class="form-control" placeholder="Enter Name here" />
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> <i class="lni lni-close"></i>Close</button>
+                    <button type="submit" class="btn btn-primary"><i class="lni lni-save"></i>Save</button>
+                </div>
+            </EditForm>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+@code
+{
+    string loggedInEmail;
+    string modalTitle = "Add Project";
+    string pageUrl = "projects";
+    Module parentPage = new IMSClassLibrary.Models.Module();
+    Module thisPage = new IMSClassLibrary.Models.Module();
+    bool isEditing = false;
+    IMSClassLibrary.Models.Project project = new IMSClassLibrary.Models.Project()
+        {
+            CreatedBy = " ",
+            ModifiedBy = " ",
+            Status = "active"
+
+        };
+    List<IMSClassLibrary.Models.Project> projects = new List<IMSClassLibrary.Models.Project>();
+
+
+    protected override void OnInitialized()
+    {
+        string loggedInEmail;
+        base.OnInitialized();
+        projects = projectRepository.GetAll().Data;
+        resetModel();
+
+        string Remail = httpContextAccessor.HttpContext.Session.GetString("email");
+        var result = userRepository.Get(Remail);
+
+        if (result.IsSuccessful)
+        {
+            httpContextAccessor.HttpContext.Session.SetString("email", result.Data.Email);
+            loggedInEmail = result.Data.Email;
+            thisPage = moduleRepository.Get(pageUrl).Data;
+            parentPage = moduleRepository.Get(thisPage.ParentId).Data;
+
+            if (!authorisation.authorize(result.Data.Id, pageUrl))
+            {
+                UriHelper.NavigateTo("/");
+            }
+        }
+        else
+        {
+
+        }
+    }
+
+    void saveProject()
+    {
+
+        var results = isEditing ? projectRepository.Update(this.project) : projectRepository.Add(this.project);
+        if (results.IsSuccessful)
+        {
+            NotificationService.ShowSuccess(results.Message);
+        }
+        else
+        {
+            NotificationService.ShowError(results.Message);
+        }
+        closeModal("addMenuModal");
+        resetModel();
+    }
+
+    private void editProject(IMSClassLibrary.Models.Project mn)
+    {
+        isEditing = true;
+        this.modalTitle = "Edit Project";
+        this.project = mn;
+        openModal("addMenuModal");
+    }
+
+    void deleteProject(IMSClassLibrary.Models.Project mn)
+    {
+        this.project = mn;
+        openModal("deleteMenuModal");
+    }
+
+    void completeDelete()
+    {
+        var results = projectRepository.DeleteById(project.Id);
+        if (results.IsSuccessful)
+        {
+            resetModel();
+            closeModal("deleteMenuModal");
+            NotificationService.ShowSuccess(results.Message);
+        }
+        else
+        {
+            NotificationService.ShowError("Could not delete Menu, Something went wrong");
+        }
+
+    }
+
+    void resetModel()
+    {
+
+        projects = projectRepository.GetAll().Data;
+        this.modalTitle = "Add Project";
+        this.project = new IMSClassLibrary.Models.Project()
+            {
+                CreatedBy = " ",
+                ModifiedBy = " ",
+                Status = "active"
+            };
+    }
+
+    private async Task ShowNotification(string type, string message)
+    {
+        await js.InvokeVoidAsync(type + "_noti", message);
+    }
+
+
+    protected async Task openModal(string modalId) 
+    { 
+        await js.InvokeVoidAsync("openModal", modalId); 
+    }
+
+    protected async Task closeModal(string modalId)
+    {
+        await js.InvokeVoidAsync("closeModal", modalId);
+    }
+
+}
+
+

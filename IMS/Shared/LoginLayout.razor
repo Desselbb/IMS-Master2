@@ -1,0 +1,42 @@
+﻿
+
+
+
+
+
+
+
+@inherits LayoutComponentBase
+@inject IJSRuntime js
+
+	<!--wrapper-->
+	<div class="wrapper">
+		<div class="section-authentication-signin d-flex align-items-center justify-content-center my-5 my-lg-0">
+			<div class="container-fluid">
+				
+			@Body
+			
+			
+			</div>
+		</div>
+		
+
+	
+
+	</div>
+
+@code {
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		base.OnAfterRender(firstRender);
+		init();
+	}
+
+	async Task init()
+	{
+		await js.InvokeVoidAsync("initializeAppUi", "");
+	}
+
+
+}
