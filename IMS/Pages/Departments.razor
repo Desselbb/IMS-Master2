@@ -142,218 +142,105 @@
 
 
 @code
-
 {
     private Department department = new Department();
-
     private List<Department> departments = new List<Department>();
-
     private bool isEditing = false;
-
     private string modalTitle = "Add Department";
-
-
-
     protected override void OnInitialized()
-
     {
-
         base.OnInitialized();
-
         LoadDepartments();
-
-
     }
-
-
-
     private void LoadDepartments()
-
     {
-
         var result = departmentRepository.GetAll();
-
         if (result.IsSuccessful)
-
         {
-
             departments = result.Data;
-
         }
-
         else
-
         {
-
             NotificationService.ShowError("Could not load departments.");
-
         }
-
     }
-
-
-
-    
-
     private void saveDepartment()
-
     {
-
         ResultObject<Department> result;
-
-
-
       try
        {
-
-            if (isEditing)
-
+        if (isEditing)
         {
-
             result = departmentRepository.Update(department);
-
         }
-
         else
-
         {
-
             result = departmentRepository.Add(department);
-
         }
-
-
-
         if (result.IsSuccessful)
-
         {
-
             NotificationService.ShowSuccess(result.Message);
-
             LoadDepartments();
-
             ResetForm();
-
             CloseModal("exampleModallogin");
-
         }
-
         else
-
         {
-
             NotificationService.ShowError(result.Message);
-
         }
-       }catch (Exception ex) { 
+       }catch (Exception ex)
+        { 
          NotificationService.ShowError("An unexpected error occurred: " + ex.Message);
-         Console.WriteLine(ex.ToString()); }
-
+         Console.WriteLine(ex.ToString()); 
+        }
 }
-
-
-
     private void editDepartment(Department dept)
-
     {
-
         isEditing = true;
-
         modalTitle = "Edit Department";
-
         department = dept;
-
         ShowModal();
-
     }
-
-
-
     private void deleteDepartment(Department dept)
-
     {
-
         department = dept;
-
         ShowModal();
-
     }
-
-
-
     private void completeDelete()
-
     {
-
         var result = departmentRepository.DeleteById(department.Id);
-
         if (result.IsSuccessful)
-
         {
-
             NotificationService.ShowSuccess(result.Message);
-
             LoadDepartments();
-
             CloseModal("exampleModallogin2");
-
         }
-
         else
-
         {
-
             NotificationService.ShowError(result.Message);
-
         }
-
     }
-
-
-
     private void ResetForm()
-
     {
-
         isEditing = false;
-
         modalTitle = "Add Department";
-
         department = new Department
-
             {
-
-                CreatedBy = " ",
-
-                ModifiedBy = " ",
-
+                CreatedBy = "Admin",
+                ModifiedBy = "Admin",
                 Status = "active"
-
             };
-
     }
-
-
-
-
-
     private void ShowModal()
     { // Use JavaScript interop to show the modal 
         js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
     }
-
-
-        private void ShowModal2()
+    private void ShowModal2()
     { // Use JavaScript interop to show the modal 
         js.InvokeVoidAsync("$('#exampleModallogin2').modal", "show");
     }
-
-
-        private void CloseModal(string modalId)
-
+    private void CloseModal(string modalId)
     {
-
         js.InvokeVoidAsync($"$('#{modalId}').modal", "hide");
-
     }
 }
