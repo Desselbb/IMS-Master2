@@ -9,7 +9,9 @@
 @inject NotificationService NotificationService;
 @inject NavigationManager UriHelper
 @inject IHttpContextAccessor httpContextAccessor;
-
+@using IMSClassLibrary.Context;
+@using Microsoft.EntityFrameworkCore
+@inject IServiceProvider ServiceProvider
 
 @inject IJSRuntime js
 
@@ -141,96 +143,91 @@
 
 
 
-@code
-{
+@code {
     private Department department = new Department();
     private List<Department> departments = new List<Department>();
     private bool isEditing = false;
     private string modalTitle = "Add Department";
-    protected override void OnInitialized()
-    {
+    private SystemDbContext _context;
+
+    private DepartmentRepository _departmentRepository;
+
+    protected override void OnInitialized() { 
         base.OnInitialized();
+        InitializeDbContext();
         LoadDepartments();
     }
+
+    private void InitializeDbContext() {
+        _context = ServiceProvider.GetRequiredService<SystemDbContext>();
+        _departmentRepository = new DepartmentRepository(_context);
+    }
+
+
     private void LoadDepartments()
     {
-        var result = departmentRepository.GetAll();
-        if (result.IsSuccessful)
-        {
+        var result = _departmentRepository.GetAll();
+        if (result.IsSuccessful) {
             departments = result.Data;
         }
         else
-        {
-            NotificationService.ShowError("Could not load departments.");
-        }
+        { // Handle error (e.g., show a message to the user)
+            Console.WriteLine(result.Message); 
+        } 
     }
-    private void saveDepartment()
-    {
-        ResultObject<Department> result;
-      try
-       {
-        if (isEditing)
-        {
-            result = departmentRepository.Update(department);
-        }
-        else
-        {
-            result = departmentRepository.Add(department);
-        }
-        if (result.IsSuccessful)
-        {
-            NotificationService.ShowSuccess(result.Message);
-            LoadDepartments();
-            ResetForm();
-            CloseModal("exampleModallogin");
-        }
-        else
-        {
-            NotificationService.ShowError(result.Message);
-        }
-       }catch (Exception ex)
-        { 
-         NotificationService.ShowError("An unexpected error occurred: " + ex.Message);
-         Console.WriteLine(ex.ToString()); 
-        }
-}
+
+    private void saveDepartment() {
+        if (isEditing) {
+            var result = _departmentRepository.Update(department);
+            if (result.IsSuccessful) { LoadDepartments();
+                ResetForm();
+            } else {
+                // Handle error (e.g., show a message to the user) 
+                Console.WriteLine(result.Message); 
+            }
+            } else {
+            var result = _departmentRepository.Add(department);
+            if (result.IsSuccessful) { LoadDepartments(); 
+                ResetForm();
+            } else {
+                // Handle error (e.g., show a message to the user) 
+                 Console.WriteLine(result.Message); 
+              } 
+            }
+          } 
+
+
+
     private void editDepartment(Department dept)
     {
+        department = dept;
         isEditing = true;
         modalTitle = "Edit Department";
-        department = dept;
-        ShowModal();
     }
-    private void deleteDepartment(Department dept)
+
+    private void ResetForm()
     {
-        department = dept;
-        ShowModal();
+        department = new Department();
+        isEditing = false;
+        modalTitle = "Add Department";
+    }
+
+    private void deleteDepartment(Department dept) {
+        department = dept; 
     }
     private void completeDelete()
     {
-        var result = departmentRepository.DeleteById(department.Id);
-        if (result.IsSuccessful)
-        {
-            NotificationService.ShowSuccess(result.Message);
+        var result = _departmentRepository.DeleteById(department.Id);
+        if (result.IsSuccessful) {
             LoadDepartments();
-            CloseModal("exampleModallogin2");
+            ResetForm();
         }
         else
         {
-            NotificationService.ShowError(result.Message);
+            // Handle error (e.g., show a message to the user) 
+            Console.WriteLine(result.Message); }
         }
-    }
-    private void ResetForm()
-    {
-        isEditing = false;
-        modalTitle = "Add Department";
-        department = new Department
-            {
-                CreatedBy = "Admin",
-                ModifiedBy = "Admin",
-                Status = "active"
-            };
-    }
+
     private void ShowModal()
     { // Use JavaScript interop to show the modal 
         js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
@@ -243,4 +240,5 @@
     {
         js.InvokeVoidAsync($"$('#{modalId}').modal", "hide");
     }
+
 }
