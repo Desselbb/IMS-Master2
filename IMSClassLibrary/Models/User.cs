@@ -16,7 +16,9 @@ namespace IMSClassLibrary.Models
         public int Id { get; set; }
 
         [Required]
+        public string DepartmentName { get; set; }
         public int DepartmentId { get; set; }
+
 
         [Required]
         public string Email { get; set; }

@@ -41,6 +41,7 @@
                                 Fill in your information below.
                             </p>
                             <EditForm Model="@user" OnValidSubmit="saveModule" class="row g-3">
+
                                 <div class="modal-body">
                                     <DataAnnotationsValidator />
                                     <ValidationSummary />
@@ -59,7 +60,10 @@
                                         <label>Nrc</label>
                                         <InputText @bind-Value="user.Nrc" class="form-control" placeholder="Enter NRC Number here" />
                                     </div>
-
+                                    <div class="col-md-12"> 
+                                        <label>Password</label>
+                                        <InputText @bind-Value="user.Password" type="password" class="form-control" placeholder="Enter Password here" /> 
+                                    </div>
                                     <div class="col-md-12">
                                         <label>Email</label>
                                         <InputText type="email" @bind-Value="user.Email" class="form-control" placeholder="Enter Email here" />
@@ -69,12 +73,23 @@
                                         <InputSelect @bind-Value="user.DepartmentId" class="form-control">
                                             <option value="0">--Select Department--</option>
                                             @foreach (var dep in departments)
-
                                             {
                                                 <option value="@dep.Id">@dep.Name</option>
                                             }
                                         </InputSelect>
                                     </div>
+                                    <div class="col-md-12">
+                                        <label>Address</label> 
+                                        <InputText @bind-Value="user.Address" class="form-control" placeholder="Enter Address here" /> 
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <label>Status</label>
+                                        <InputSelect @bind-Value="user.Status" class="form-control"> 
+                                            <option value="In progress">In progress</option>
+                                            <option value="Complete">Complete</option>
+                                        </InputSelect>
+                                      </div>
                                     <div class="col-12">
                                     <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit </button>
                                 </div>
@@ -102,12 +117,14 @@
             <table class="table">
                 <thead>
                     <tr class="border-bottom-primary">
-                        <th scope="col">#</th>
-                        <th scope="col">First Name</th>
-                        <th scope="col">Last Name</th>
-                        <th scope="col">NRC</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Department</th>
+                            <th scope="col">#</th>
+                            <th scope="col">First Name</th>
+                            <th scope="col">Last Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Department</th>
+                            <th scope="col">NRC</th>
+                            <th scope="col">Address</th>
+                            <th scope="col">Status</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
@@ -119,18 +136,21 @@
                     {
                         <tr>
                             <td>@count</td>
-                            <td>@usr.FirstName</td>
-                            <td>@usr.LastName</td>
-                            <td>@usr.Nrc</td>
-                            <td>@usr.Email </td>
-                            <td>@usr.Department.Name</td>
+                                <td>@usr.FirstName</td>
+                                <td>@usr.LastName</td> 
+                                <td>@usr.Email </td>
+                                <td>@usr.Department.Name</td>
+                                <td>@usr.Nrc</td>
+                                <td>@usr.Address</td>
+                                <td>@usr.Status</td>
+                           
                             <td>
-                                <button title="Edit" type="button" @onclick="@(()=>editMenu(usr))" class="btn btn-outline-primary">
-                                    <i class="bx bx-edit me-0"></i>
-                                </button>
-                                <button title="Delete" type="button" @onclick="@(()=>deleteMenu(usr))" class="btn btn-outline-danger">
-                                    <i class="bx bx-trash me-0"></i>
-                                </button>
+                                <a href="#" title="Edit" @onclick="@(()=>editMenu(usr))" class="edit">
+                                        <i data-feather="edit-3"></i>
+                                </a>
+                                    <a href="#" title="Delete" @onclick="@(()=>deleteMenu(usr))"class="delete" data-bs-toggle="modal" data-bs-target="#exampleModallogin2">
+                                        <i data-feather="trash-2"></i>
+                                </a>
                             </td>
                         </tr>
                         count++;
@@ -178,11 +198,11 @@
     Module parentPage = new Module();
     Module thisPage = new Module();
     string modalTitle = "Add User";
-    bool isEditing = false;
+    bool isEditing = true;
     User user = new IMSClassLibrary.Models.User()
     {
-        CreatedBy = " ",
-        ModifiedBy = " ",
+        CreatedBy = "Admin",
+        ModifiedBy = "Admin ",
         Status = "active",
         Password="password"
 
@@ -287,13 +307,13 @@
 
     void resetModel()
     {
-        departments = departmentRepository.GetAll().Data;
+        departments = departmentRepository.GetAll();
         this.users = userRepository.GetAll().Data;
         this.modalTitle = "Add User";
         this.user = new User()
             {
                 CreatedBy =  loggedInEmail,
-                ModifiedBy = " ",
+                ModifiedBy = "Admin ",
                 Status = "active",
                 Password = "password"
             };

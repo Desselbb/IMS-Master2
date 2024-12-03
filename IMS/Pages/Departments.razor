@@ -12,7 +12,6 @@
 @using IMSClassLibrary.Context;
 @using Microsoft.EntityFrameworkCore
 @inject IServiceProvider ServiceProvider
-
 @inject IJSRuntime js
 
 <PageTitle>Departments</PageTitle>
@@ -46,17 +45,18 @@
                             <p>
                                 Fill in your information below.
                             </p>
-                            <EditForm Model="@department" OnValidSubmit="saveDepartment" class="row g-3">
+                            <EditForm Model="@departments" OnValidSubmit="saveDepartment" class="row g-3">
 
 
                                 <div class="col-md-12"> 
                                     <label for="name" class="form-label">Department Name</label>
-                                    <InputText id="name" class="form-control" @bind-Value="department.Name" /> 
+                                    <InputText id="name" required class="form-control" @bind-Value="department.Name" /> 
                                 </div>
+      
 
 
                                 <div class="col-12">
-                                    <button class="btn btn-primary" type="submit" >Submit </button>
+                                    <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit </button>
                                 </div>
 
                             </EditForm>
@@ -104,6 +104,7 @@
                                         <i data-feather="trash-2"></i>
                                 </a>
                             </td>
+
                         </tr>
                         count++;
                     }
@@ -130,7 +131,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="lni lni-close"></i> Close</button>
-                <button @onclick="completeDelete" type="button" class="btn btn-danger"><i class="lni lni-trash"></i> Delete</button>
+                    <button @onclick="completeDelete" type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="lni lni-trash"></i> Delete</button>
             </div>
         </div>
     </div>
@@ -144,14 +145,20 @@
 
 
 @code {
-    private Department department = new Department();
+    
     private List<Department> departments = new List<Department>();
-    private bool isEditing = false;
     private string modalTitle = "Add Department";
     private SystemDbContext _context;
 
     private DepartmentRepository _departmentRepository;
+    private Department department = new Department()
+        {
+            CreatedBy = "Admin",
+            ModifiedBy = "Admin ",
+            Status = "active"
 
+
+        };
     protected override void OnInitialized() { 
         base.OnInitialized();
         InitializeDbContext();
@@ -163,82 +170,82 @@
         _departmentRepository = new DepartmentRepository(_context);
     }
 
-
     private void LoadDepartments()
     {
-        var result = _departmentRepository.GetAll();
-        if (result.IsSuccessful) {
-            departments = result.Data;
+        Console.WriteLine("am up");
+        try
+        {
+            departments = _departmentRepository.GetAll();
         }
-        else
-        { // Handle error (e.g., show a message to the user)
-            Console.WriteLine(result.Message); 
+        catch (Exception ex)
+        {
+            // Handle error (e.g., show a message to the user)
+            Console.WriteLine(ex.Message); 
         } 
     }
 
-    private void saveDepartment() {
-        if (isEditing) {
-            var result = _departmentRepository.Update(department);
-            if (result.IsSuccessful) { LoadDepartments();
-                ResetForm();
-            } else {
-                // Handle error (e.g., show a message to the user) 
-                Console.WriteLine(result.Message); 
-            }
-            } else {
-            var result = _departmentRepository.Add(department);
-            if (result.IsSuccessful) { LoadDepartments(); 
-                ResetForm();
-            } else {
-                // Handle error (e.g., show a message to the user) 
-                 Console.WriteLine(result.Message); 
-              } 
-            }
-          } 
+    private async Task HandleValidSubmit()
+    {
+        await _departmentRepository.AddAsync(department); // Call the service method
 
+    }
 
+    private void saveDepartment()
+    {
+        department = _departmentRepository.Add(department);
+        LoadDepartments();
+        Console.WriteLine("yoooo");
+        //ResetForm();
+    }
 
     private void editDepartment(Department dept)
     {
         department = dept;
-        isEditing = true;
         modalTitle = "Edit Department";
     }
 
     private void ResetForm()
     {
         department = new Department();
-        isEditing = false;
         modalTitle = "Add Department";
     }
 
-    private void deleteDepartment(Department dept) {
+    private void deleteDepartment(Department dept)
+    {
         department = dept; 
     }
+
     private void completeDelete()
     {
-        var result = _departmentRepository.DeleteById(department.Id);
-        if (result.IsSuccessful) {
-            LoadDepartments();
-            ResetForm();
-        }
-        else
+        try
         {
-            // Handle error (e.g., show a message to the user) 
-            Console.WriteLine(result.Message); }
+            if (_departmentRepository.DeleteById(department.Id))
+            {
+                LoadDepartments();
+                ResetForm();
+            }
         }
+        catch (Exception ex)
+        {
+            // Handle error (e.g., show a message to the user)
+            Console.WriteLine(ex.Message);
+        }
+    }
 
     private void ShowModal()
-    { // Use JavaScript interop to show the modal 
+    { 
+        // Use JavaScript interop to show the modal 
         js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
     }
+
     private void ShowModal2()
-    { // Use JavaScript interop to show the modal 
+    { 
+        // Use JavaScript interop to show the modal 
         js.InvokeVoidAsync("$('#exampleModallogin2').modal", "show");
     }
+
     private void CloseModal(string modalId)
     {
         js.InvokeVoidAsync($"$('#{modalId}').modal", "hide");
     }
-
 }

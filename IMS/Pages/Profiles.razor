@@ -82,18 +82,15 @@
 						<tr>
 							<td>@count</td>
 							<td>@pro.Name</td>
-							<td>
-								
-									<button type="button" title="Edit Profile"  @onclick="@(()=>editProfile(pro))" class="btn btn-outline-primary">
-										<i class="bx bx-edit me-0"></i>
-									</button>
 
-									<button type="button" title="Delete Profile"   @onclick="@(()=>deleteProfile(pro))" class="btn btn-outline-danger">
-										<i class="bx bx-trash me-0"></i>
-									</button>
-								
-
-							</td>
+								<td>
+									<a href="#" title="Edit" @onclick="@(()=>editProfile(pro))" class="edit">
+										<i data-feather="edit-3"></i>
+									</a>
+									<a href="#" title="Delete" @onclick="@(()=>deleteProfile(pro))" class="delete" data-bs-toggle="modal" data-bs-target="#exampleModallogin2">
+										<i data-feather="trash-2"></i>
+									</a>
+								</td>
 						</tr>
 						count++;
 					}

@@ -16,6 +16,7 @@ namespace IMSClassLibrary.Models
 
         [ForeignKey(nameof(Department))]
         public int DepartmentId { get; set; }
+        public string DepartmentName { get; set; }
         [Required]
         [StringLength(100)]
         public string? CreatedBy { get; set; }

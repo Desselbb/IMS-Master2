@@ -2,20 +2,22 @@
 
 namespace IMSClassLibrary.Interfaces
 {
-    internal interface IInterface
+    internal interface IDepartment<T>
     {
+        T Add(T item);
 
-        
-        bool Add(Department Department);
+        List<T> AddRange(List<T> items);
 
-        bool AddRange(List<Department> Departments);
+        T Update(T item);
 
-        Department Get(int Id);
+        T Get(int Id);
 
-        List<Department> GetAll();
-
-        bool Update(Department Department);
+        List<T> GetAll();
 
         bool DeleteById(int Id);
+
+        bool Delete(T item);
     }
+
+
 }

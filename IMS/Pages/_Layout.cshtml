@@ -14,6 +14,12 @@
     <link rel="icon" href="assets/images/favicon.png" type="image/x-icon">
     <link rel="shortcut icon" href="assets/images/favicon.png" type="image/x-icon">
     <title>Intern Information System</title>
+
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="css/Styles/styless.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-iconic@1.1.1/font/css/open-iconic-bootstrap.min.css" 
+    integrity="sha384-MD3qIvOWZTsQxA/fl+sF4h0Z6wK3hOxi/r44Xm6ufGgfBjq5Jv/tdBg/n7AcLHjQ" 1 crossorigin="anonymous">
     <!-- Google font-->
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
@@ -54,7 +60,7 @@
     @RenderBody()
 
 
-<script src="_framework/blazor.server.js"></script>
+
 
 <!-- latest jquery-->
  <script src="assets/js/jquery.min.js"></script>
@@ -96,8 +102,28 @@
 <script src="assets/js/theme-customizer/customizer.js"></script>
 <script>new WOW().init();</script>
 
+ <script src="_framework/blazor.server.js"></script>
 
+    <script>
+        (function () {
+            'use strict';
+            window.addEventListener('load', function () {
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                var forms = document.getElementsByClassName('needs-validation');
+                // Loop over them and prevent submission
+                var validation = Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
 
+    </script>
 
 </body>
 </html>

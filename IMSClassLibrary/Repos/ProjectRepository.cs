@@ -1,11 +1,14 @@
-﻿
+﻿using IMSClassLibrary.Interfaces;
+using IMSClassLibrary.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace IMSClassLibrary.Repos
 {
     public class ProjectRepository : IInterface<Project>
     {
-        SystemDbContext _context;
-
+        private readonly SystemDbContext _context;
         public ProjectRepository(SystemDbContext context)
         {
             this._context = context;
@@ -15,21 +18,13 @@ namespace IMSClassLibrary.Repos
         {
             try
             {
-                if (this.Get(project.Name.Trim()).Data == null) // meaning there is no similar recrd
-                {
-                    _context.Projects.Add(project);
-                    _context.SaveChanges();
-                    return ResultObject<Project>.Success("Project has been added successfully");
-                }
-                else
-                {
-                    return ResultObject<Project>.Failure("There is already another Project with the same name");
-                }
+                _context.Projects.Add(project);
+                _context.SaveChanges();
+                return ResultObject<Project>.Success("Project added successfully", project);
             }
-            catch (Exception d)
+            catch (Exception ex)
             {
-                Console.WriteLine(d.Message + "\n" + d.StackTrace);
-                return ResultObject<Project>.Failure("There is already another Project with the same name");
+                return ResultObject<Project>.Failure(ex.Message, null);
             }
         }
 
@@ -37,94 +32,63 @@ namespace IMSClassLibrary.Repos
         {
             try
             {
-                bool addAll = true;
-                foreach (var md in projects)
-                {
-                    if (Get(md.Name.Trim()).Data.Id > 0)
-                    {
-                        addAll = false;
-                        break;
-                    }
-                }
-                if (addAll)
-                {
-                    _context.Projects.AddRange(projects);
-                    _context.SaveChanges();
-
-                    return ResultObject<Project>.Success("Projects have been added successfully");
-                }
-                else
-                {
-                    return ResultObject<Project>.Failure("Some Project in the submited list have Names similar to the ones in the system already,this will cause conflicts. the operation has been aborted");
-                }
-            }
-            catch (Exception d)
-            {
-                Console.WriteLine(d.Message + "\n" + d.StackTrace);
-                return ResultObject<Project>.Failure("Could not add the Project, Something went wrong");
-            }
-
-        }
-
-        public ResultObject<Project> Delete(Project item)
-        {
-            try
-            {
-                _context.Projects.Remove(item);
+                _context.Projects.AddRange(projects);
                 _context.SaveChanges();
-                return ResultObject<Project>.Success("The Project has been deleted successfuly");
+                return ResultObject<Project>.Success("Departments added successfully");
             }
-            catch
+            catch (Exception ex)
             {
-                return ResultObject<Project>.Failure("Could not delete the Project, something went wrong");
+                return ResultObject<Project>.Failure(ex.Message, null);
             }
         }
 
-        public ResultObject<Project> DeleteById(int Id)
+        public ResultObject<Project> Delete(Project project)
         {
             try
             {
-                _context.Projects.Remove(_context.Projects.Single(b => b.Id == Id));
+                _context.Projects.Remove(project);
                 _context.SaveChanges();
-                return ResultObject<Project>.Success("The Project has been deleted successfuly");
+                return ResultObject<Project>.Success("Department deleted successfully", project);
             }
-            catch
+            catch (Exception ex)
             {
-                return ResultObject<Project>.Failure("Could not delete the Project, something went wrong");
+                return ResultObject<Project>.Failure(ex.Message, null);
             }
         }
 
-        public ResultObject<Project> Get(int Id)
+        public ResultObject<Project> DeleteById(int id)
         {
             try
             {
-                return ResultObject<Project>.Success("Project Retrived", _context.Projects.Single(b => b.Id == Id));
+                var project = _context.Projects.Find(id);
+                if (project == null)
+                {
+                    return ResultObject<Project>.Failure("Project not found", null);
+                }
+                _context.Projects.Remove(project);
+                _context.SaveChanges();
+                return ResultObject<Project>.Success("Project deleted successfully", project);
             }
-            catch (Exception d)
+            catch (Exception ex)
             {
-                return ResultObject<Project>.Failure("Could not retrieve the Project, Something went wrong", new Project());
+                return ResultObject<Project>.Failure(ex.Message, null);
             }
         }
-        public ResultObject<Project> Get(string name)
+
+        public ResultObject<Project> Get(int id)
         {
             try
             {
-                return ResultObject<Project>.Success("", _context.Projects.Where(b => b.Name.Trim() == name.Trim()).FirstOrDefault());
+                var project = _context.Projects.Find(id);
+                if (project == null)
+                {
+                    return ResultObject<Project>.Failure("Project not found", null);
+                }
+                return ResultObject<Project>.Success("Project retrieved successfully", project);
             }
-            catch (Exception d)
+            catch (Exception ex)
             {
-                return ResultObject<Project>.Failure("Could not retrive the Project, Something went wrong", new Project());
-            }
-        }
-        public ResultObject<Project> Get(string name, int Id)
-        {
-            try
-            {
-                return ResultObject<Project>.Success("", _context.Projects.Single(b => b.Name.Trim() == name.Trim() && b.Id != Id));
-            }
-            catch (Exception d)
-            {
-                return ResultObject<Project>.Failure("Could not retrive the Project", new Project());
+                return ResultObject<Project>.Failure(ex.Message, null);
             }
         }
 
@@ -132,11 +96,12 @@ namespace IMSClassLibrary.Repos
         {
             try
             {
-                return ResultObject<List<Project>>.Success("", _context.Projects.ToList());
+                var projects = _context.Projects.ToList();
+                return ResultObject<List<Project>>.Success("Projects retrieved successfully", projects);
             }
-            catch
+            catch (Exception ex)
             {
-                return ResultObject<List<Project>>.Failure("Could not retrive the Project", new List<Project>());
+                return ResultObject<List<Project>>.Failure(ex.Message, null);
             }
         }
 
@@ -144,23 +109,13 @@ namespace IMSClassLibrary.Repos
         {
             try
             {
-                if (this.Get(project.Name, project.Id).Data.Id < 1)
-                {
-                    _context.Projects.Update(project);
-                    _context.SaveChanges();
-                    return ResultObject<Project>.Success("Project Updated successfuly");
-
-                }
-                else
-                {
-                    _context.Entry(project).Reload();
-                    return ResultObject<Project>.Failure("There is already another Project with the same name");
-                }
+                _context.Projects.Update(project);
+                _context.SaveChanges();
+                return ResultObject<Project>.Success("Department updated successfully", project);
             }
-            catch
+            catch (Exception ex)
             {
-                _context.Entry(project).Reload();
-                return ResultObject<Project>.Failure("Could not update the Project, Something went wrong!");
+                return ResultObject<Project>.Failure(ex.Message, null);
             }
         }
     }

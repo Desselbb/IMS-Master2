@@ -1,13 +1,5 @@
 ﻿
 
-
-
-
-
-
-
-
-
 @using IMSClassLibrary.Models;
 @using IMSClassLibrary.Repos;
 @using Microsoft.AspNetCore.Http
@@ -22,48 +14,51 @@
 
 <PageTitle>Login</PageTitle>
 
-<div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3">
-					<div class="col mx-auto">
-						<div class="card rounded-4">
-							<div class="card-body">
-								<div class="border p-4 rounded-4">
-									<div class="text-center">
-										<img src="assets/images/logo-icon.png" width="70" alt="" />
-                    <h3>Intern Information System</h3>
-                    <h4>Login</h4>
 
+    <!-- login page start-->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xl-5"><img class="bg-img-cover bg-center" src="../assets/images/login/3.jpg" alt="loginpage"></div>
+        <div class="col-xl-7 p-0">
+          <div class="login-card login-dark">
+            <div> 
+            
+              <div class="login-main"> 
 
+                <EditForm Model="@user" OnValidSubmit="@login" class="theme-form">
+                  <h4>Sign in to account</h4>
+                  <p>Enter your email & password to login</p>
+                  <div class="form-group">
+                    <label class="col-form-label">Email Address</label>
+                    <InputText  class="form-control"  @bind-Value="user.Email" type="email" required=""/>
                   </div>
-
-					 <EditForm Model="@user" OnValidSubmit="@login" class="row g-3">
-                       <div class="col-md-12">
-                          <label class="form-label" for="inputEmail4">Email</label>
-                          <InputText class="form-control"  @bind-Value="user.Email" id="inputEmail4" type="email" placeholder="Enter Your Email" />
-
-                        </div>
-                        <div class="col-md-12">
-                          <label class="form-label" for="inputPassword4">Password</label>
-                          <InputText class="form-control" @bind-Value="user.Password" id="inputPassword4" type="password" placeholder="Enter Your Password" />
-                        </div>
-			           <div class="col-md-6">
-				         <div class="form-check form-switch">
-						 <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
-						 <label class="form-check-label" for="flexSwitchCheckChecked">Remember Me</label>
-						 </div>
-					</div>
-
-                        <div class="col-12">
-                          <button class="btn btn-primary" type="submit">Sign in </button>
-                        </div>
-              </EditForm>
+                  <div class="form-group">
+                    <label class="col-form-label">Password</label>
+                    <div class="form-input position-relative">
+                      <InputText class="form-control" type="password"  @bind-Value="user.Password" name="login[password]" required="" />
+                      <div class="show-hide"><span class="show">                         </span></div>
                     </div>
                   </div>
-                </div>
-              </div>	
-</div>	
-				
-										
+                  <div class="form-group mb-0">
+                    <div class="checkbox p-0">
+                      <input id="checkbox1" type="checkbox">
+                      <label class="text-muted" for="checkbox1">Remember password</label>
+                    </div><a class="link" href="forget-password.html">Forgot password?</a>
+                    <div class="text-end mt-3">
+                      <button class="btn btn-primary btn-block w-100" type="submit">Sign in</button>
+                    </div>
+                  </div>
 
+                  </EditForm>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    
+    </div>
+ 
 			
 				<!--end row-->
 					
@@ -113,7 +108,7 @@
 		{
 			httpContextAccessor.HttpContext.Session.SetString("email", user.Email);
 			NotificationService.ShowSuccess("Logged in as "+user.Email);
-			UriHelper.NavigateTo("home");
+			UriHelper.NavigateTo("AdminDashboard");
 		}
 		else
 		{
