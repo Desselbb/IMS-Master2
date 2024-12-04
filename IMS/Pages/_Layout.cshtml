@@ -19,7 +19,7 @@
     <link href="css/site.css" rel="stylesheet" />
     <link href="css/Styles/styless.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-iconic@1.1.1/font/css/open-iconic-bootstrap.min.css" 
-    integrity="sha384-MD3qIvOWZTsQxA/fl+sF4h0Z6wK3hOxi/r44Xm6ufGgfBjq5Jv/tdBg/n7AcLHjQ" 1 crossorigin="anonymous">
+    <!--integrity="sha384-MD3qIvOWZTsQxA/fl+sF4h0Z6wK3hOxi/r44Xm6ufGgfBjq5Jv/tdBg/n7AcLHjQ" 1 crossorigin="anonymous"-->
     <!-- Google font-->
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
@@ -60,9 +60,9 @@
     @RenderBody()
 
 
+    <script src="_framework/blazor.server.js"></script>
 
-
-<!-- latest jquery-->
+    <!-- latest jquery-->
  <script src="assets/js/jquery.min.js"></script>
 <!-- Bootstrap js-->
 <script src="assets/js/bootstrap/bootstrap.bundle.min.js"></script>
@@ -100,9 +100,11 @@
 <!-- Theme js-->
 <script src="assets/js/script.js"></script>
 <script src="assets/js/theme-customizer/customizer.js"></script>
-<script>new WOW().init();</script>
+<script>
+    new WOW().init();
+</script>
 
- <script src="_framework/blazor.server.js"></script>
+
 
     <script>
         (function () {
@@ -124,6 +126,10 @@
         })();
 
     </script>
+
+    
+
+
 
 </body>
 </html>

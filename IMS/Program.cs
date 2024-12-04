@@ -6,6 +6,7 @@ using IMSClassLibrary.Repos;
 using IMSClassLibrary.repos;
 using Microsoft.EntityFrameworkCore;
 using Blazored.SessionStorage;
+using Microsoft.Extensions.Configuration;
 
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,124 +1,98 @@
-﻿
-
-@using IMSClassLibrary.Models;
-@using IMSClassLibrary.Repos;
+﻿@page "/"
+@using IMSClassLibrary.Models
+@using IMSClassLibrary.Repos
 @using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Identity
 @inject NavigationManager UriHelper
 @inject UserRepository userRepository
-@inject NotificationService NotificationService;
+@inject NotificationService NotificationService
 @inject IHttpContextAccessor httpContextAccessor
 @layout LoginLayout
 
-
-@page "/"
-
 <PageTitle>Login</PageTitle>
 
+<!-- login page start-->
+<div class="container-fluid" style="height: 100vh; margin: 10; padding: 10;">
+    <div class="row" style="height: 100vh; margin: 0; padding: 10;">
+        <div class="col-xl-5" style="padding: 10;"> <img src="loginimg.jpeg" alt="loginpage" style="width: 100%; height: 100vh; object-fit: cover;"> </div>
+            <div class="col-xl-7 p-0">
+            <div class="login-card login-dark">
+                <div>
+                    <EditForm Model="@user" OnValidSubmit="@Login" class="theme-form">
+                        <h1>Intern Information System</h1><br />
 
-    <!-- login page start-->
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-xl-5"><img class="bg-img-cover bg-center" src="../assets/images/login/3.jpg" alt="loginpage"></div>
-        <div class="col-xl-7 p-0">
-          <div class="login-card login-dark">
-            <div> 
-            
-              <div class="login-main"> 
-
-                <EditForm Model="@user" OnValidSubmit="@login" class="theme-form">
-                  <h4>Sign in to account</h4>
-                  <p>Enter your email & password to login</p>
-                  <div class="form-group">
-                    <label class="col-form-label">Email Address</label>
-                    <InputText  class="form-control"  @bind-Value="user.Email" type="email" required=""/>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-form-label">Password</label>
-                    <div class="form-input position-relative">
-                      <InputText class="form-control" type="password"  @bind-Value="user.Password" name="login[password]" required="" />
-                      <div class="show-hide"><span class="show">                         </span></div>
-                    </div>
-                  </div>
-                  <div class="form-group mb-0">
-                    <div class="checkbox p-0">
-                      <input id="checkbox1" type="checkbox">
-                      <label class="text-muted" for="checkbox1">Remember password</label>
-                    </div><a class="link" href="forget-password.html">Forgot password?</a>
-                    <div class="text-end mt-3">
-                      <button class="btn btn-primary btn-block w-100" type="submit">Sign in</button>
-                    </div>
-                  </div>
-
-                  </EditForm>
-              </div>
+                        <h5>Sign in to account</h5><br />
+                        
+                        <div class="form-group">
+                            <label class="col-form-label">Email Address</label>
+                            <InputText class="form-control" @bind-Value="user.Email" type="email" required="" />
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Password</label>
+                            <div class="form-input position-relative">
+                                <InputText class="form-control" type="password" @bind-Value="user.Password" required="" />
+                                <div class="show-hide"><span class="show"></span></div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-0">
+                            <div class="checkbox p-0"> <input id="checkbox1" type="checkbox">
+                                <label class="text-muted" for="checkbox1">Remember password</label> 
+                                </div><a class="link" href="forget-password.html">Forgot password?</a>
+                            <div class="text-end mt-3">
+                                <button class="btn btn-primary btn-block w-100" type="submit">Sign in</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-
-    
     </div>
- 
-			
-				<!--end row-->
-					
+</div>
 
-@code
-{
-	
-	User user = new User()
-		{
-			CreatedBy="",
-			ModifiedBy="",
-			CreatedDate =DateTime.Now,
-			ModifiedDate =DateTime.Now,
-			FirstName ="",
-			LastName=""
+@code {
+    private User user = new User
+        {
+            CreatedBy = "",
+            ModifiedBy = "",
+            CreatedDate = DateTime.Now,
+            ModifiedDate = DateTime.Now,
+            FirstName = "",
+            LastName = ""
+        };
 
-	};
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ResetUser();
+    }
 
-	
-	protected override void OnInitialized()
-	{
+    private void ResetUser()
+    {
+        user = new User
+            {
+                CreatedBy = "",
+                ModifiedBy = "",
+                CreatedDate = DateTime.Now,
+                ModifiedDate = DateTime.Now,
+                FirstName = "",
+                LastName = ""
+            };
+    }
 
-		base.OnInitialized();
-
-		resetUser();
-	}
-
-
-	private void resetUser()
-	{
-		user = new User()
-		{
-			CreatedBy="",
-			ModifiedBy="",
-			CreatedDate =DateTime.Now,
-			ModifiedDate =DateTime.Now,
-			FirstName ="",
-			LastName=""
-
-		};
-	}
-
-	private  void login()
-	{
-		var result = userRepository.Get(user.Email);
-		if (result.IsSuccessful)
-		{
-			httpContextAccessor.HttpContext.Session.SetString("email", user.Email);
-			NotificationService.ShowSuccess("Logged in as "+user.Email);
-			UriHelper.NavigateTo("AdminDashboard");
-		}
-		else
-		{
-			resetUser();
-			NotificationService.ShowError("Could not login, Username or Password is incorrect");
-		}
-	}
-
-
-
-
-	
+    private void Login()
+    {
+        var foundUser = userRepository.GetUserByEmail(user.Email);
+        if (foundUser != null && foundUser.Password == user.Password)
+        {
+            // Simulate setting session and showing success notification
+            httpContextAccessor.HttpContext.Session.SetString("email", user.Email);
+            NotificationService.ShowSuccess("Logged in as " + user.Email);
+            UriHelper.NavigateTo("AdminDashboard");
+        }
+        else
+        {
+            ResetUser();
+            NotificationService.ShowError("Could not login, Username or Password is incorrect");
+        }
+    }
 }

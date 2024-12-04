@@ -9,7 +9,9 @@ namespace IMSClassLibrary.Repos
         {
             this._context = context;
         }
-
+        public User GetUserByEmail(string email) 
+        { return _context.Users.FirstOrDefault(u => u.Email == email);
+        }
         public ResultObject<User> Add(User user)
         {
             try
