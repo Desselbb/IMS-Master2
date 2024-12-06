@@ -10,5 +10,5 @@ global using System.Reflection;
 global using System.Net.Mail;
 global using System.Net;
 global using Module = IMSClassLibrary.Models.Module;
-global using IMSClassLibrary.repos;
+global using IMSClassLibrary.Repos;
 

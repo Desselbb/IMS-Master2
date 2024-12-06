@@ -1,5 +1,5 @@
 ﻿
-namespace IMSClassLibrary.repos
+namespace IMSClassLibrary.Repos
 {
     public class EmailRepository
     {

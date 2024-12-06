@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-
+@inject IJSRuntime js
 
 
 <PageTitle>IMS</PageTitle>
@@ -35,7 +35,7 @@
                     <div class="back-btn"><i class="fa fa-angle-left"> </i></div>
                     <div class="toggle-sidebar"><i class="status_toggle middle sidebar-toggle" data-feather="grid"> </i></div>
                 </div>
-                <div class="logo-icon-wrapper"><a href="index.html"><img class="img-fluid" src="assets/images/logo/logo-icon.png" alt=""></a></div>
+                
                 <SideMenu />
             </div>
             <!-- Page Sidebar Ends-->
@@ -49,6 +49,7 @@
 
             </div>
         </div>
+
          @Body
    </div>            
 
@@ -56,5 +57,5 @@
        <Footer />
     </div>
  </div>
-
+ 
    

@@ -3,6 +3,8 @@
 @using IMSClassLibrary.Repos
 @using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
 @inject NavigationManager UriHelper
 @inject UserRepository userRepository
 @inject NotificationService NotificationService
@@ -14,15 +16,15 @@
 <!-- login page start-->
 <div class="container-fluid" style="height: 100vh; margin: 10; padding: 10;">
     <div class="row" style="height: 100vh; margin: 0; padding: 10;">
-        <div class="col-xl-5" style="padding: 10;"> <img src="loginimg.jpeg" alt="loginpage" style="width: 100%; height: 100vh; object-fit: cover;"> </div>
-            <div class="col-xl-7 p-0">
-            <div class="login-card login-dark">
+
+        <div class="col-xl-7 p-0">
+            <div class="login-card login-dark" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); border-radius: 10px;">
                 <div>
                     <EditForm Model="@user" OnValidSubmit="@Login" class="theme-form">
                         <h1>Intern Information System</h1><br />
 
                         <h5>Sign in to account</h5><br />
-                        
+
                         <div class="form-group">
                             <label class="col-form-label">Email Address</label>
                             <InputText class="form-control" @bind-Value="user.Email" type="email" required="" />
@@ -35,9 +37,10 @@
                             </div>
                         </div>
                         <div class="form-group mb-0">
-                            <div class="checkbox p-0"> <input id="checkbox1" type="checkbox">
-                                <label class="text-muted" for="checkbox1">Remember password</label> 
-                                </div><a class="link" href="forget-password.html">Forgot password?</a>
+                            <div class="checkbox p-0">
+                                <input id="checkbox1" type="checkbox">
+                                <label class="text-muted" for="checkbox1">Remember password</label>
+                            </div><a class="link" href="forget-password.html">Forgot password?</a>
                             <div class="text-end mt-3">
                                 <button class="btn btn-primary btn-block w-100" type="submit">Sign in</button>
                             </div>
@@ -46,19 +49,19 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-xl-5" style="padding: 10;">
+            <img src="loginimg.jpeg" alt="loginpage" style="width: 100%; height: 100vh; object-fit: cover;">
+        </div>
     </div>
 </div>
 
+
+
 @code {
-    private User user = new User
-        {
-            CreatedBy = "",
-            ModifiedBy = "",
-            CreatedDate = DateTime.Now,
-            ModifiedDate = DateTime.Now,
-            FirstName = "",
-            LastName = ""
-        };
+    private User user = new User();
+    private string errorMessage;
+
 
     protected override void OnInitialized()
     {
@@ -79,7 +82,50 @@
             };
     }
 
-    private void Login()
+    private async Task Login()
+    {
+        try
+        {
+            // Retrieve user details from the database using UserRepository
+            var dbUser = userRepository.GetUserByEmail(user.Email);
+
+            if (dbUser == null)
+            {
+                errorMessage = "Invalid email or password.";
+                return;
+            }
+
+            // Validate the password using ASP.NET Identity
+            var result = await SignInManager.PasswordSignInAsync(user.Email, user.Password, isPersistent: false, lockoutOnFailure: false);
+
+            if (result.Succeeded)
+            {
+                // Redirect to the dashboard or another page after successful login
+                UriHelper.NavigateTo("AdminDashboard");
+            }
+            else if (result.IsLockedOut)
+            {
+                errorMessage = "Your account has been locked. Please try again later.";
+            }
+            else
+            {
+                errorMessage = "Invalid email or password.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+        }
+    }
+}
+
+
+
+@code {
+ 
+
+
+    private void Logitn()
     {
         var foundUser = userRepository.GetUserByEmail(user.Email);
         if (foundUser != null && foundUser.Password == user.Password)

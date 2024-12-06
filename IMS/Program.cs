@@ -3,10 +3,14 @@ using IMSClassLibrary.Context;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using IMSClassLibrary.Repos;
-using IMSClassLibrary.repos;
 using Microsoft.EntityFrameworkCore;
 using Blazored.SessionStorage;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI;
+
+
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +39,8 @@ builder.Services.AddTransient<NotificationService>();
 builder.Services.AddTransient<Authorisation>();
 builder.Services.AddBlazoredSessionStorage();
 
-
+// Add Identity services
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true) .AddEntityFrameworkStores<SystemDbContext>(); 
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddHttpContextAccessor();
