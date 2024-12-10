@@ -10,6 +10,21 @@ namespace IMSClassLibrary.Repos
             this._context = context;
         }
 
+
+        public List<InternProject> GetProjectsByUser(string userId)
+        {
+            if (int.TryParse(userId, out int profileId))
+            {
+                return _context.InternProjects.Where(p => p.ProfileId == profileId).ToList();
+            }
+            else
+            {
+                // Handle the case where userId is not a valid integer.
+                // Returning an empty list or throwing an exception might be appropriate depending on your use case.
+                return new List<InternProject>();
+            }
+        }
+
         public ResultObject<InternProject> Add(InternProject item)
         {
             try

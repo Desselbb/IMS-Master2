@@ -20,21 +20,23 @@
         <div class="col-xl-7 p-0">
             <div class="login-card login-dark" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); border-radius: 10px;">
                 <div>
-                    <EditForm Model="@user" OnValidSubmit="@Login" class="theme-form">
+                    <EditForm Model="@user" OnValidSubmit="@Login" class="theme-form" Id="loginForm">
                         <h1>Intern Information System</h1><br />
 
                         <h5>Sign in to account</h5><br />
 
                         <div class="form-group">
                             <label class="col-form-label">Email Address</label>
-                            <InputText class="form-control" @bind-Value="user.Email" type="email" required="" />
+                            <InputText class="form-control" @bind-Value="user.Email" id="email" type="email" required />
+                            <span class="text-danger" id="emailError"></span>
                         </div>
                         <div class="form-group">
                             <label class="col-form-label">Password</label>
                             <div class="form-input position-relative">
-                                <InputText class="form-control" type="password" @bind-Value="user.Password" required="" />
+                                <InputText class="form-control" type="password" @bind-Value="user.Password" id="password" required />
                                 <div class="show-hide"><span class="show"></span></div>
                             </div>
+                            <span class="text-danger" id="passwordError"></span>
                         </div>
                         <div class="form-group mb-0">
                             <div class="checkbox p-0">
@@ -42,7 +44,7 @@
                                 <label class="text-muted" for="checkbox1">Remember password</label>
                             </div><a class="link" href="forget-password.html">Forgot password?</a>
                             <div class="text-end mt-3">
-                                <button class="btn btn-primary btn-block w-100" type="submit">Sign in</button>
+                                <button class="btn btn-primary btn-block w-100" type="submit" onclick="validateForm(event)">Sign in</button>
                             </div>
                         </div>
                     </EditForm>
@@ -62,7 +64,6 @@
     private User user = new User();
     private string errorMessage;
 
-
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -72,73 +73,46 @@
     private void ResetUser()
     {
         user = new User
-            {
-                CreatedBy = "",
-                ModifiedBy = "",
-                CreatedDate = DateTime.Now,
-                ModifiedDate = DateTime.Now,
-                FirstName = "",
-                LastName = ""
-            };
+        {
+            CreatedBy = "",
+            ModifiedBy = "",
+            CreatedDate = DateTime.Now,
+            ModifiedDate = DateTime.Now,
+            FirstName = "",
+            LastName = ""
+        };
     }
 
     private async Task Login()
     {
         try
         {
-            // Retrieve user details from the database using UserRepository
-            var dbUser = userRepository.GetUserByEmail(user.Email);
-
-            if (dbUser == null)
-            {
-                errorMessage = "Invalid email or password.";
-                return;
-            }
-
             // Validate the password using ASP.NET Identity
             var result = await SignInManager.PasswordSignInAsync(user.Email, user.Password, isPersistent: false, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
+                Console.WriteLine("Login succeeded");
+                httpContextAccessor.HttpContext.Session.SetString("email", user.Email);
                 // Redirect to the dashboard or another page after successful login
                 UriHelper.NavigateTo("AdminDashboard");
             }
             else if (result.IsLockedOut)
             {
+                Console.WriteLine(errorMessage);
                 errorMessage = "Your account has been locked. Please try again later.";
             }
             else
             {
+                Console.WriteLine(errorMessage);
+                ResetUser();
                 errorMessage = "Invalid email or password.";
             }
         }
         catch (Exception ex)
         {
             errorMessage = $"An unexpected error occurred: {ex.Message}";
-        }
-    }
-}
-
-
-
-@code {
- 
-
-
-    private void Logitn()
-    {
-        var foundUser = userRepository.GetUserByEmail(user.Email);
-        if (foundUser != null && foundUser.Password == user.Password)
-        {
-            // Simulate setting session and showing success notification
-            httpContextAccessor.HttpContext.Session.SetString("email", user.Email);
-            NotificationService.ShowSuccess("Logged in as " + user.Email);
-            UriHelper.NavigateTo("AdminDashboard");
-        }
-        else
-        {
-            ResetUser();
-            NotificationService.ShowError("Could not login, Username or Password is incorrect");
+            Console.WriteLine(errorMessage);
         }
     }
 }

@@ -64,7 +64,7 @@
 
     <!-- latest jquery-->
 <script src="assets/js/jquery.min.js?v=1.0"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/validator@13.7.0/validator.min.js"></script>
 <!-- Bootstrap js-->
 <script src="assets/js/bootstrap/bootstrap.bundle.min.js"></script>
 <!-- feather icon js-->
@@ -104,6 +104,34 @@
 <script>
     new WOW().init();
 </script>
+    <script>
+        function validateForm(event) {
+            var email = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+            var emailError = document.getElementById('emailError');
+            var passwordError = document.getElementById('passwordError');
+
+            emailError.textContent = '';
+            passwordError.textContent = '';
+
+            var isValid = true;
+
+            if (!validator.isEmail(email)) {
+                emailError.textContent = 'Invalid email address';
+                isValid = false;
+            }
+
+            if (validator.isEmpty(password)) {
+                passwordError.textContent = 'Password is required';
+                isValid = false;
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+            }
+        }
+    </script>
+
 
 </body>
 </html>
