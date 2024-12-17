@@ -15,106 +15,109 @@
 @inject IJSRuntime js
 
 <PageTitle>Departments</PageTitle>
-<!--breadcrumb-->
-
- <div class="container-fluid">
+<br />
+<div class="container-fluid">
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-        <div class="breadcrumb-title pe-3"></div>
-        <nav aria-label="breadcrumb">
-        <ul class="dot-group pb-3 pt-0">
-            <li class="breadcrumb-item">
-                    <a href="javascript:;"><i class="bx bx-home-alt"></i></a></li>
-            <li class="breadcrumb-item active" aria-current="page"> </li>
-            <li></li>
-        </ul>
-        </nav>
-	<div class="ms-auto">
-        <div class="overflow-hidden">
+        <div class="breadcrumb-title pe-3"><h2>Departments</h2></div>
+        <div class="ms-auto">
             <div class="btn-group">
-                
-                    <button class="btn btn-primary mx-auto mt-3" @onclick="ShowModal" type="button" data-bs-toggle="modal" data-bs-target="#exampleModallogin">Add</button>
-             </div>
+                <button class="btn btn-primary" @onclick="ShowModal" type="button" data-bs-toggle="modal" data-bs-target="#exampleModallogin">Add</button>
+            </div>
         </div>
     </div>
-        <div class="modal fade" id="exampleModallogin" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content dark-sign-up">
-                    <div class="modal-body social-profile text-start">
-                        <div class="modal-toggle-wrapper">
 
-                            <h3>Add Department</h3>
-                            <p>
-                                Fill in your information below.
-                            </p>
-                            <EditForm Model="@departments" OnValidSubmit="saveDepartment" class="row g-3">
-
-
-                                <div class="col-md-12"> 
-                                    <label for="name" class="form-label">Department Name</label>
-                                    <InputText id="name" required class="form-control" @bind-Value="department.Name" /> 
-                                </div>
-      
-
-
-                                <div class="col-12">
-                                    <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit </button>
-                                </div>
-
-                            </EditForm>
-                        </div>
+    <!-- Add Modal -->
+    <div class="modal fade" id="exampleModallogin" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-sign-up">
+                <div class="modal-body social-profile text-start">
+                    <div class="modal-toggle-wrapper">
+                        <h3>Add Department</h3>
+                        <p>Fill in your information below.</p>
+                        <EditForm Model="@department" OnValidSubmit="saveDepartment" class="row g-3">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                            <div class="col-md-12">
+                                <label for="name" class="form-label">Department Name</label>
+                                <InputText id="name" required class="form-control" @bind-Value="department.Name" />
+                                <ValidationMessage For="@(() => department.Name)" />
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit</button>
+                            </div>
+                        </EditForm>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 
-<!--end breadcrumb-->
-
-
-<div class="col-sm-12">
-    <div class="card">
-        <div class="card-header">
-            <h4>Departments</h4>
-        </div>
-        <div class="table-responsive custom-scrollbar">
-            <table class="table">
-                <thead>
-                    <tr class="border-bottom-primary">
-                        <th scope="col">Id</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Actions</th>
-                    </tr>
-                </thead>
-                 <tbody>
-                    @{
-                        int count = 1;
-                    }
-                    @foreach (var dep in departments)
-                    {
-                        <tr class="border-bottom-success">
-                            <td>@count</td>
-                            <td>@dep.Name</td>
-                            <td> @dep.Status </td>
-                            <td>
-                                <a href="#" title="Edit"  @onclick="@(()=>editDepartment(dep))" class="edit">
-                                        <i data-feather="edit-3"></i>
-                                </a>
-                                    <a href="#" title="Delete" @onclick="@(()=>deleteDepartment(dep))" class="delete" data-bs-toggle="modal" data-bs-target="#exampleModallogin2">
-                                        <i data-feather="trash-2"></i>
-                                </a>
-                            </td>
-
+    <!-- Departments Table -->
+    <div class="col-sm-12">
+    <div class="table-responsive mt-4 mt-xl-0">
+          <table class="table table-success table-striped table-nowrap align-middle mb-0">
+              <thead>
+                        <tr class="border-bottom-primary">
+                            <th scope="col">Id</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Actions</th>
                         </tr>
-                        count++;
-                    }
+                    </thead>
+                    <tbody>
+                        @{
+                            int count = 1;
+                        }
+                        @foreach (var dep in departments)
+                        {
+                            <tr class="border-bottom-success">
+                                <td>@count</td>
+                                <td>@dep.Name</td>
+                                <td>@dep.Status</td>
+                                <td>
+                                    <a href="#" title="Edit" @onclick="@(() => editDepartment(dep))" class="edit" data-bs-toggle="modal" data-bs-target="#editModal">
+                                        <i class="fa-solid fa-pencil"></i>
+                                    </a>
+                                    <a href="#" title="Delete" @onclick="@(() => deleteDepartment(dep))" class="delete" data-bs-toggle="modal" data-bs-target="#exampleModallogin2">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            count++;
+                        }
                     </tbody>
-                   
-            </table>
+                </table>
+            </div>
+        </div>
+
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-sign-up">
+                <div class="modal-body social-profile text-start">
+                    <div class="modal-toggle-wrapper">
+                        <h3>Edit Department</h3>
+                        <p>Update your information below.</p>
+                        <EditForm Model="@department" OnValidSubmit="updateDepartment" class="row g-3">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                            <div class="col-md-12">
+                                <label for="editName" class="form-label">Department Name</label>
+                                <InputText id="editName" required class="form-control" @bind-Value="department.Name" />
+                                <ValidationMessage For="@(() => department.Name)" />
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Update</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+
 
 
   <div class="modal fade" id="exampleModallogin2" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin2" aria-hidden="true">
@@ -143,6 +146,32 @@
 
 
 
+    <!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-sign-up">
+                <div class="modal-body social-profile text-start">
+                    <div class="modal-toggle-wrapper">
+                        <h3>Edit Department</h3>
+                        <p>Update your information below.</p>
+                    <EditForm Model="@department" OnValidSubmit="updateDepartment" class="row g-3">
+                            <div class="col-md-12">
+                                <label for="editName" class="form-label">Department Name</label>
+                                <InputText id="editName" required class="form-control" @bind-Value="department.Name" />
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Update</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
 
 
 @code {
@@ -151,12 +180,13 @@
     private string modalTitle = "Add Department";
     private SystemDbContext _context;
 
+
     private DepartmentRepository _departmentRepository;
     private Department department = new Department()
         {
             CreatedBy = "Admin",
             ModifiedBy = "Admin ",
-            Status = "active"
+            Status = "Active"
 
 
         };
@@ -196,13 +226,12 @@
         department = _departmentRepository.Add(department);
         LoadDepartments();
         Console.WriteLine("yoooo");
-        //ResetForm();
+        ResetForm();
     }
 
     private void editDepartment(Department dept)
     {
-        department = dept;
-        modalTitle = "Edit Department";
+        department = dept; // Load the selected department details into the modal
     }
 
     private void ResetForm()
@@ -222,8 +251,9 @@
         {
             if (_departmentRepository.DeleteById(department.Id))
             {
-                LoadDepartments();
+               
                 ResetForm();
+                LoadDepartments();
             }
         }
         catch (Exception ex)
@@ -232,6 +262,11 @@
             Console.WriteLine(ex.Message);
         }
     }
+    private void updateDepartment()
+    { // Logic to update the department details 
+        departmentRepository.Update(department);
+        // Update the UI or refresh the department list
+         }
 
     private void ShowModal()
     { 

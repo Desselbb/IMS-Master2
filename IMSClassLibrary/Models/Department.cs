@@ -8,7 +8,7 @@ namespace IMSClassLibrary.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Department Name is required")]
         public string Name { get; set; }
 
         [DefaultValue("active")]
