@@ -1,17 +1,22 @@
-﻿namespace IMSClassLibrary.Interfaces
+﻿
+namespace IMSClassLibrary.Interfaces
 {
-    internal interface IUser
+    internal interface IUser<T>
     {
-        bool Add(User User);
+        T Add(T item);
 
-        bool AddRange(List<User> Users);
+        List<T> AddRange(List<T> items);
 
-        User Get(int Id);
+        T Update(T item);
 
-        List<User> GetAll();
+        T Get(int Id);
 
-        bool Update(User User);
+        List<T> GetAll();
 
         bool DeleteById(int Id);
+
+        bool Delete(T item);
     }
+
+
 }

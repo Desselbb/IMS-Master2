@@ -2,7 +2,7 @@
 
 namespace IMSClassLibrary.Interfaces
 {
-    internal interface IProfile<T>
+    internal interface IProject<T>
     {
         T Add(T item);
 

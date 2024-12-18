@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Pages\kaya.razor" />
     <Content Remove="Pages\Projects.razor" />
     <Content Remove="Shared\NavSideMenu.razor" />
     <Content Remove="Shared\Navvmenu.razor" />
@@ -36,11 +37,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <_ContentIncludedByDefault Remove="Pages\kaya.razor" />
     <_ContentIncludedByDefault Remove="Shared\Navvmenu.razor" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Pages\Kaya.razor" />
     <None Include="Shared\Navvmenu.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Pages\kaya.razor" />
   </ItemGroup>
 
 </Project>

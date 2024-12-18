@@ -19,6 +19,8 @@
 
 <PageTitle>Projects</PageTitle>
 <!--breadcrumb-->
+<div class="container-fluid">
+
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
     <div class="breadcrumb-title pe-3">@parentPage.Name</div>
     <div class="ps-3">
@@ -54,7 +56,7 @@
                         <th>Project Name</th>
                         <th>Descripton</th>
                         <th>Department</th>
-                        <th>Status</th>
+                        
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -69,7 +71,7 @@
                             <td>@proj.Name</td>
                             <td>@proj.Description</td>
                             <td>@proj.DepartmentName</td>
-                            <td>@proj.Status </td>
+                            
                                                        
                             <td>
                                 <a href="#" title="Edit" @onclick="@(()=>editProject(proj))" class="edit">
@@ -111,43 +113,68 @@
     </div>
 </div>
 
-<div class="modal fade" id="addMenuModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">@modalTitle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <EditForm Model="@project" OnValidSubmit="saveProject">
-                <div class="modal-body">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
 
-                    <div class="form-group">
-                        <label>Department Name</label>
-                        <InputText @bind-Value="project.Name" class="form-control" placeholder="Enter Name here" />
+   <div class="modal fade" id="exampleModallogin" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-sign-up">
+                <div class="modal-body social-profile text-start">
+                    <div class="modal-toggle-wrapper">
+                        <h3>Add Department</h3>
+                        <p>Fill in your information below.</p>
+                        <EditForm Model="@project" OnValidSubmit="saveProject" class="row g-3">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                            <div class="col-md-12">
+                                <label for="name" class="form-label">Department Name</label>
+                                <InputText id="name" required class="form-control" @bind-Value="project.Name" />
+                                <ValidationMessage For="@(() => project.Name)" />
+                            </div>
+                             <div class="col-md-12">
+                                <label for="description" class="form-label">Department Name</label>
+                                <InputText id="description" required class="form-control" @bind-Value="project.Description" />
+                                <ValidationMessage For="@(() => project.Description)" />
+                            </div>
+                           <div class="col-md-12">
+                            <label for="deptname" class="form-label">Department Name</label>
+                              <InputSelect id="deptname" class="form-control" @bind-Value="project.DepartmentName">
+                           <option value="" disabled>Select Department</option>
+                    @foreach (var dept in departmentList)
+                     {
+                             <option value="@dept">@dept</option>
+                     }
+                            </InputSelect>
+                     <ValidationMessage For="@(() => project.DepartmentName)" />
+
+                     </div>
+
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit</button>
+                            </div>
+                        </EditForm>
                     </div>
-
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> <i class="lni lni-close"></i>Close</button>
-                    <button type="submit" class="btn btn-primary"><i class="lni lni-save"></i>Save</button>
-                </div>
-            </EditForm>
-
+            </div>
         </div>
-    </div>
-</div>
-
-
+    </div
+    </div
 
 
 @code
 {
-    private IMSClassLibrary.Models.Project project = new IMSClassLibrary.Models.Project();
+    private IMSClassLibrary.Models.Project project = new IMSClassLibrary.Models.Project()
+           {
+            CreatedBy = "Admin",
+            ModifiedBy = "Admin ",
+            Status = "Active"
+
+        };
     private List<IMSClassLibrary.Models.Project> projects = new List<IMSClassLibrary.Models.Project>();
+
+    private List<string> departmentList = new List<string>();
+
     private string modalTitle = "Add Department";
     string pageUrl = "projects";
+
     Module parentPage = new IMSClassLibrary.Models.Module();
     Module thisPage = new IMSClassLibrary.Models.Module();
     private bool isEditing = false;
@@ -155,86 +182,99 @@
     private SystemDbContext _context;
 
     private ProjectRepository _projectRepository;
-    private DepartmentRepository _departmentRepository;
 
+    private DepartmentRepository _departmentRepository;
+  
+   
 
     protected override void OnInitialized() { 
         base.OnInitialized();
         InitializeDbContext();
         LoadProjects();
+        LoadDepartments();
 
     }
 
     private void InitializeDbContext() {
         _context = ServiceProvider.GetRequiredService<SystemDbContext>();
-        _projectRepository = new ProjectRepository(_context);
+         _projectRepository = new ProjectRepository(_context);
         _departmentRepository = new DepartmentRepository(_context);
+    }
+
+    private void LoadDepartments()
+    {
+        // Fetch the list of departments from your repository or context
+        departmentList = departmentRepository.GetAll().Select(d => d.Name).ToList();
     }
 
 
     private void LoadProjects()
     {
-        var result = _projectRepository.GetAll();
-        if (result.IsSuccessful) {
-            projects = result.Data;
+        Console.WriteLine("am up");
+        try
+        {
+           projects = _projectRepository.GetAll();
         }
-        else
-        { // Handle error (e.g., show a message to the user)
-            Console.WriteLine(result.Message); 
+        catch (Exception ex)
+        {
+            // Handle error (e.g., show a message to the user)
+            Console.WriteLine(ex.Message); 
         } 
     }
 
-    private void saveProject() {
-        if (isEditing) {
-            var result = _projectRepository.Update(project);
-            if (result.IsSuccessful) { LoadProjects();
-                ResetForm();
-            } else {
-                // Handle error (e.g., show a message to the user) 
-                Console.WriteLine(result.Message); 
-            }
-            } else {
-            var result = _projectRepository.Add(project);
-            if (result.IsSuccessful) { LoadProjects(); 
-                ResetForm();
-            } else {
-                // Handle error (e.g., show a message to the user) 
-                 Console.WriteLine(result.Message); 
-              } 
-            }
-          } 
-
-
-    private void editProject(IMSClassLibrary.Models.Project proj)
+        private void saveProject()
     {
-        project = proj;
-        isEditing = true;
-        modalTitle = "Edit Project";
+        project = _projectRepository.Add(project);
+        LoadProjects();
+        Console.WriteLine("yoooo");
+        ResetForm();
     }
 
-    private void ResetForm()
+   
+    private void editProject(IMSClassLibrary.Models.Project pro)
     {
-        project = new IMSClassLibrary.Models.Project();
-        isEditing = false;
-        modalTitle = "Add Project";
+       project = pro; // Load the selected department details into the modal
     }
 
-    private void deleteProject(IMSClassLibrary.Models.Project proj)
+
+
+    private void deleteProject(IMSClassLibrary.Models.Project pro)
     {
-        project = proj; 
+        project = pro; 
     }
-    private void completeDelete()
+
+
+
+      private void ResetForm()
     {
-        var result = _projectRepository.DeleteById(project.Id);
-        if (result.IsSuccessful) {
-            LoadProjects();
-            ResetForm();
-        }
-        else
+        project = new IMSClassLibrary.Models.Project();        
+    }
+
+
+        private void completeDelete()
+    {
+        try
         {
-            // Handle error (e.g., show a message to the user) 
-            Console.WriteLine(result.Message); }
+            if (_projectRepository.DeleteById(project.Id))
+            {
+               
+                ResetForm();
+                LoadProjects();
+            }
         }
+        catch (Exception ex)
+        {
+            // Handle error (e.g., show a message to the user)
+            Console.WriteLine(ex.Message);
+        }
+    }
+        private void updateProjects()
+    { // Logic to update the department details 
+        projectRepository.Update(project);
+        ResetForm();
+        // Update the UI or refresh the department list
+         }
+
     private void ShowModal()
     { // Use JavaScript interop to show the modal 
         js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
@@ -249,5 +289,3 @@
     }
 
 }
-
-

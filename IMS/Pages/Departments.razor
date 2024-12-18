@@ -91,32 +91,6 @@
         </div>
 
 
-    <!-- Edit Modal -->
-    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content dark-sign-up">
-                <div class="modal-body social-profile text-start">
-                    <div class="modal-toggle-wrapper">
-                        <h3>Edit Department</h3>
-                        <p>Update your information below.</p>
-                        <EditForm Model="@department" OnValidSubmit="updateDepartment" class="row g-3">
-                            <DataAnnotationsValidator />
-                            <ValidationSummary />
-                            <div class="col-md-12">
-                                <label for="editName" class="form-label">Department Name</label>
-                                <InputText id="editName" required class="form-control" @bind-Value="department.Name" />
-                                <ValidationMessage For="@(() => department.Name)" />
-                            </div>
-                            <div class="col-12">
-                                <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Update</button>
-                            </div>
-                        </EditForm>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 
 
 
@@ -194,6 +168,7 @@
         base.OnInitialized();
         InitializeDbContext();
         LoadDepartments();
+        
     }
 
     private void InitializeDbContext() {
@@ -265,6 +240,7 @@
     private void updateDepartment()
     { // Logic to update the department details 
         departmentRepository.Update(department);
+        ResetForm();
         // Update the UI or refresh the department list
          }
 

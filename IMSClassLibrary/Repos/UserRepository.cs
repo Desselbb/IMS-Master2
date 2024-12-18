@@ -2,169 +2,70 @@
 
 namespace IMSClassLibrary.Repos
 {
-    public class UserRepository : IInterface<User>
+    public class UserRepository : IUser<User>
     {
-        SystemDbContext _context;
+        private readonly SystemDbContext _context;
+
         public UserRepository(SystemDbContext context)
         {
             this._context = context;
         }
-        public User GetUserByEmail(string email) 
-        { return _context.Users.FirstOrDefault(u => u.Email == email);
-        }
-        public ResultObject<User> Add(User user)
+
+        public User Add(User user)
         {
-            try
-            {
-                if (_context.Users.Where(u=>u.Email == user.Email.Trim()).FirstOrDefault() == null)
-                {
-                    _context.Users.Add(user);
-                    _context.SaveChanges();
-
-                    EmailRepository ee = new EmailRepository();
-                    ee.sendMail(user.Email, "Intern Information System", "You have been registered as an Intern on Intern Information System, Kindly login in at ");
-
-                    return ResultObject<User>.Success("User has been added successfully");
-                }
-                else
-                {
-                    return ResultObject<User>.Failure("There is already another User with the same Email");
-                }
-            }
-            catch (Exception d)
-            {
-                Console.WriteLine(d.Message + "\n" + d.StackTrace);
-                return ResultObject<User>.Failure("Could not add user, something went wrong.");
-            }
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            return user;
         }
 
-
-        public ResultObject<User> AddRange(List<User> users)
+        public async Task<User> AddAsync(User user)
         {
-            try
-            {
-                bool addAll = true;
-                foreach (var md in users)
-                {
-                    if (Get(md.Email.Trim()).Data.Id > 0)
-                    {
-                        addAll = false;
-                        break;
-                    }
-                }
-                if (addAll)
-                {
-                    _context.Users.AddRange(users);
-                    _context.SaveChanges();
-
-                    return ResultObject<User>.Success("Users have been added successfully");
-                }
-                else
-                {
-                    return ResultObject<User>.Failure("Some User in the submited list have Emails similar to the ones in the system already,this will cause conflicts. the operation has been aborted");
-                }
-            }
-            catch (Exception d)
-            {
-                Console.WriteLine(d.Message + "\n" + d.StackTrace);
-                return ResultObject<User>.Failure("Could not add the Users, Something went wrong");
-            }
-
-
-            
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return user;
         }
 
-        public ResultObject<User> Delete(User item)
+        public List<User> AddRange(List<User> users)
         {
-            try
+            _context.Users.AddRange(users);
+            _context.SaveChanges();
+            return users;
+        }
+
+        public bool Delete(User user)
+        {
+            _context.Users.Remove(user);
+            _context.SaveChanges();
+            return true;
+        }
+
+        public bool DeleteById(int id)
+        {
+            var user = _context.Users.Find(id);
+            if (user != null)
             {
-                _context.Users.Remove(item);
+                _context.Users.Remove(user);
                 _context.SaveChanges();
-                return ResultObject<User>.Success("The User has been deleted successfuly");
+                return true;
             }
-            catch
-            {
-                return ResultObject<User>.Failure("Could not delete the User, something went wrong");
-            }
+            return false;
         }
 
-        public ResultObject<User> DeleteById(int Id)
+        public User Get(int id)
         {
-            try
-            {
-                _context.Users.Remove(_context.Users.Single(b => b.Id == Id));
-                _context.SaveChanges();
-                return ResultObject<User>.Success("The User has been deleted successfuly");
-            }
-            catch
-            {
-                return ResultObject<User>.Failure("Could not delete the User, something went wrong");
-            }
+            return _context.Users.Find(id);
         }
 
-
-
-
-        public ResultObject<User> Get(int Id)
+        public List<User> GetAll()
         {
-            try
-            {
-                return ResultObject<User>.Success("User Retrived", _context.Users.Include(b => b.Department.Name).Single(b => b.Id == Id));
-            }
-            catch (Exception d)
-            {
-                return ResultObject<User>.Failure("Could not retrieve the User, Something went wrong", new User());
-            }
+            return _context.Users.ToList();
         }
-        public ResultObject<User> Get(string email)
+
+        public User Update(User user)
         {
-            try
-            {
-                return ResultObject<User>.Success("", _context.Users.Include(b => b.Department.Name).Single(b => b.Email.Trim() == email.Trim()));
-            }
-            catch (Exception d)
-            {
-                return ResultObject<User>.Failure("Could not retrive the object", new User());
-            }
-
-
-        }
-       
-            public ResultObject<List<User>> GetAll()
-            {
-                try
-                {
-                    return ResultObject<List<User>>.Success("", _context.Users.ToList());
-                }
-                catch
-                {
-                    return ResultObject<List<User>>.Failure("Could not retrive the object", new List<User>());
-                }
-            }
-
-        public ResultObject<User> Update(User user)
-        {
-            try
-            {
-                if (_context.Users.Where(w=>w.Email.Trim() == user.Email && user.Id!=w.Id).FirstOrDefault() == null)
-                {
-                    _context.Users.Update(user);
-                    _context.SaveChanges();
-                    return ResultObject<User>.Success("User Updated successfuly");
-
-                }
-                else
-                {
-                    _context.Entry(user).Reload();
-                    return ResultObject<User>.Failure("There is already another User with the same Email");
-                }
-            }
-            catch
-            {
-                _context.Entry(user).Reload();
-                return ResultObject<User>.Failure("Could not update the User, Something went wrong!");
-            }
-
+            _context.Users.Update(user);
+            _context.SaveChanges();
+            return user;
         }
     }
 }

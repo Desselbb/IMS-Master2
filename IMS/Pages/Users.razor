@@ -1,130 +1,116 @@
 ﻿@page "/users"
 @using IMSClassLibrary.Models;
 @using IMSClassLibrary.Repos;
-@inject ModuleRepository moduleRepository
-@inject NotificationService NotificationService;
+@using IMS.Pages;
 @inject UserRepository userRepository
 @inject DepartmentRepository departmentRepository
 @inject ModuleRepository moduleRepository
 @inject Authorisation authorisation
+@inject NotificationService NotificationService;
 @inject NavigationManager UriHelper
-@inject IHttpContextAccessor httpContextAccessor
+@inject IHttpContextAccessor httpContextAccessor;
+@using IMSClassLibrary.Context;
+@using Microsoft.EntityFrameworkCore
+@inject IServiceProvider ServiceProvider
 @inject IJSRuntime js
 
-<PageTitle>Users</PageTitle>
-<!--breadcrumb-->
-
-  <div class="container-fluid">
+<PageTitle>Departments</PageTitle>
+<br />
+<div class="container-fluid">
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-        <div class="breadcrumb-title pe-3">@parentPage.Name</div>
-
-        <ul class="dot-group pb-3 pt-0">
-            <li></li>
-            <li></li>
-            <li></li>
-        </ul>
+        <div class="breadcrumb-title pe-3"><h2>Users</h2></div>
         <div class="ms-auto">
-            <div class="overflow-hidden">
-                <div class="btn-group">
-                    <button class="btn btn-primary mx-auto mt-3" type="button" data-bs-toggle="modal" data-bs-target="#exampleModallogin">Add</button>
-                </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" @onclick="ShowModal" type="button" data-bs-toggle="modal" data-bs-target="#exampleModallogin">Add</button>
             </div>
         </div>
-        <div class="modal fade" id="exampleModallogin" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content dark-sign-up">
-                    <div class="modal-body social-profile text-start">
-                        <div class="modal-toggle-wrapper">
+    </div>
 
-                            <h3>Add User </h3>
-                            <p>
-                                Fill in your information below.
-                            </p>
-                            <EditForm Model="@user" OnValidSubmit="saveModule" class="row g-3">
+    <!-- Add Modal -->
+    <div class="modal fade" id="exampleModallogin" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-sign-up">
+                <div class="modal-body social-profile text-start">
+                    <div class="modal-toggle-wrapper">
+                        <h3>Add Department</h3>
+                        <p>Fill in your information below.</p>
+                        <EditForm Model="@user" OnValidSubmit="saveUser" class="row g-3">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
 
-                                <div class="modal-body">
-                                    <DataAnnotationsValidator />
-                                    <ValidationSummary />
+                            <div class="col-md-12">
+                                <label>First Name</label>
+                                <InputText @bind-Value="user.FirstName" class="form-control" placeholder="Enter First Name here" />
+                                <ValidationMessage For="@(() => user.FirstName)" />
+                            </div>
 
-                                    <div class="col-md-12">
-                                        <label>First Name</label>
-                                        <InputText @bind-Value="user.FirstName" class="form-control" placeholder="Enter First Name here" />
-                                    </div>
+                            <div class="col-md-12">
+                                <label>Last Name</label>
+                                <InputText @bind-Value="user.LastName" class="form-control" placeholder="Enter Last Name here" />
+                                <ValidationMessage For="@(() => user.LastName)" />
+                            </div>
 
-                                    <div class="col-md-12">
-                                        <label>Last Name</label>
-                                        <InputText @bind-Value="user.LastName" class="form-control" placeholder="Enter Last name here" />
-                                    </div>
+                            <div class="col-md-12">
+                                <label>NRC</label>
+                                <InputText @bind-Value="user.Nrc" class="form-control" placeholder="Enter NRC Number here" />
+                                <ValidationMessage For="@(() => user.Nrc)" />
+                            </div>
 
-                                    <div class="col-md-12">
-                                        <label>Nrc</label>
-                                        <InputText @bind-Value="user.Nrc" class="form-control" placeholder="Enter NRC Number here" />
-                                    </div>
-                                    <div class="col-md-12"> 
-                                        <label>Password</label>
-                                        <InputText @bind-Value="user.Password" type="password" class="form-control" placeholder="Enter Password here" /> 
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label>Email</label>
-                                        <InputText type="email" @bind-Value="user.Email" class="form-control" placeholder="Enter Email here" />
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label>Departments</label>
-                                        <InputSelect @bind-Value="user.DepartmentId" class="form-control">
-                                            <option value="0">--Select Department--</option>
-                                            @foreach (var dep in departments)
-                                            {
-                                                <option value="@dep.Id">@dep.Name</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label>Address</label> 
-                                        <InputText @bind-Value="user.Address" class="form-control" placeholder="Enter Address here" /> 
-                                    </div>
+                            <div class="col-md-12">
+                                <label>Password</label>
+                                <InputText @bind-Value="user.Password" type="password" class="form-control" placeholder="Enter Password here" />
+                                <ValidationMessage For="@(() => user.Password)" />
+                            </div>
 
-                                    <div class="col-md-12">
-                                        <label>Status</label>
-                                        <InputSelect @bind-Value="user.Status" class="form-control"> 
-                                            <option value="In progress">In progress</option>
-                                            <option value="Complete">Complete</option>
-                                        </InputSelect>
-                                      </div>
-                                    <div class="col-12">
-                                    <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit </button>
-                                </div>
-                                </div>
-                            </EditForm>
-                        </div>
+                            <div class="col-md-12">
+                                <label>Email</label>
+                                <InputText type="email" @bind-Value="user.Email" class="form-control" placeholder="Enter Email here" />
+                                <ValidationMessage For="@(() => user.Email)" />
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="deptname" class="form-label">Department Name</label>
+                                <InputSelect id="deptname" class="form-control" @bind-Value="user.DepartmentName">
+                                    <option value="" disabled>Select Department</option>
+                                    @foreach (var dept in departmentList)
+                                    {
+                                        <option value="@dept">@dept</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => user.DepartmentName)" />
+                            </div>
+
+                            <div class="col-md-12">
+                                <label>Address</label>
+                                <InputText @bind-Value="user.Address" class="form-control" placeholder="Enter Address here" />
+                                <ValidationMessage For="@(() => user.Address)" />
+                            </div>
+
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit</button>
+                            </div>
+                        </EditForm>
+
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 
-<!--end breadcrumb-->
-
-
-
-
-<div class="col-sm-12">
-    <div class="card">
-        <div class="card-header">
-            <h4>Users</h4>
-        </div>
-        <div class="table-responsive custom-scrollbar">
-            <table class="table">
+    <!-- Users Table -->
+    <div class="col-sm-12">
+        <div class="table-responsive mt-4 mt-xl-0">
+            <table class="table table-success table-striped table-nowrap align-middle mb-0">
                 <thead>
                     <tr class="border-bottom-primary">
-                            <th scope="col">#</th>
-                            <th scope="col">First Name</th>
-                            <th scope="col">Last Name</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Department</th>
-                            <th scope="col">NRC</th>
-                            <th scope="col">Address</th>
-                            <th scope="col">Status</th>
+                        <th scope="col">#</th>
+                        <th scope="col">First Name</th>
+                        <th scope="col">Last Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">NRC</th>
+                        <th scope="col">Address</th>
+
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
@@ -134,56 +120,131 @@
                     }
                     @foreach (var usr in users)
                     {
-                        <tr>
+                        <tr class="border-bottom-success">
                             <td>@count</td>
-                                <td>@usr.FirstName</td>
-                                <td>@usr.LastName</td> 
-                                <td>@usr.Email </td>
-                                <td>@usr.Department.Name</td>
-                                <td>@usr.Nrc</td>
-                                <td>@usr.Address</td>
-                                <td>@usr.Status</td>
-                           
+                            <td>@usr.FirstName</td>
+                            <td>@usr.LastName</td>
+                            <td>@usr.Email </td>
+                            <td>@usr.DepartmentName</td>
+                            <td>@usr.Nrc</td>
+                            <td>@usr.Address</td>
                             <td>
-                                <a href="#" title="Edit" @onclick="@(()=>editMenu(usr))" class="edit">
-                                        <i data-feather="edit-3"></i>
+                                <a href="#" title="Edit" @onclick="@(() => editUser(usr))" class="edit" data-bs-toggle="modal" data-bs-target="#editModal">
+                                    <i class="fa-solid fa-pencil"></i>
                                 </a>
-                                    <a href="#" title="Delete" @onclick="@(()=>deleteMenu(usr))"class="delete" data-bs-toggle="modal" data-bs-target="#exampleModallogin2">
-                                        <i data-feather="trash-2"></i>
+                                <a href="#" title="Delete" @onclick="@(() => deleteUser(usr))" class="delete" data-bs-toggle="modal" data-bs-target="#exampleModallogin2">
+                                    <i class="fa-regular fa-trash-can"></i>
                                 </a>
                             </td>
                         </tr>
                         count++;
                     }
                 </tbody>
-
             </table>
         </div>
     </div>
+
+
+
+
+
+    <div class="modal fade" id="exampleModallogin2" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin2" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-sign-up">
+
+                <div class="modal-toggle-wrapper">
+                    <h5 class="modal-title" id="exampleModalLongTitle"> <i class="lni lni-trash"></i> Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body social-profile text-start">
+                    <label>Are you sure you want to delete this Department?</label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="lni lni-close"></i> Close</button>
+                    <button @onclick="completeDelete" type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="lni lni-trash"></i> Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </div>
 
 
-<div class="modal fade" id="deleteMenuModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle"> <i class="lni lni-trash"></i> Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
 
-            <div class="modal-body">
-                <label>Are you sure you want to delete this user?</label>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="lni lni-close"></i> Close</button>
-                <button @onclick="completeDelete" type="button" class="btn btn-danger"><i class="lni lni-trash"></i> Delete</button>
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content dark-sign-up">
+            <div class="modal-body social-profile text-start">
+                <div class="modal-toggle-wrapper">
+                    <h3>Edit Department</h3>
+                    <p>Update your information below.</p>
+
+                    <EditForm Model="@user" OnValidSubmit="updateUser" class="row g-3">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="col-md-12">
+                            <label>First Name</label>
+                            <InputText @bind-Value="user.FirstName" class="form-control" placeholder="Enter First Name here" />
+                            <ValidationMessage For="@(() => user.FirstName)" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Last Name</label>
+                            <InputText @bind-Value="user.LastName" class="form-control" placeholder="Enter Last Name here" />
+                            <ValidationMessage For="@(() => user.LastName)" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>NRC</label>
+                            <InputText @bind-Value="user.Nrc" class="form-control" placeholder="Enter NRC Number here" />
+                            <ValidationMessage For="@(() => user.Nrc)" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Password</label>
+                            <InputText @bind-Value="user.Password" type="password" class="form-control" placeholder="Enter Password here" />
+                            <ValidationMessage For="@(() => user.Password)" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Email</label>
+                            <InputText type="email" @bind-Value="user.Email" class="form-control" placeholder="Enter Email here" />
+                            <ValidationMessage For="@(() => user.Email)" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="deptname" class="form-label">Department Name</label>
+                            <InputSelect id="deptname" class="form-control" @bind-Value="user.DepartmentName">
+                                <option value="" disabled>Select Department</option>
+                                @foreach (var dept in departmentList)
+                                {
+                                    <option value="@dept">@dept</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => user.DepartmentName)" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Address</label>
+                            <InputText @bind-Value="user.Address" class="form-control" placeholder="Enter Address here" />
+                            <ValidationMessage For="@(() => user.Address)" />
+                        </div>
+
+                        <div class="col-12">
+                            <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit</button>
+                        </div>
+                    </EditForm>
+
+                </div>
             </div>
         </div>
     </div>
 </div>
-</div>
 
 
 
@@ -191,146 +252,129 @@
 
 
 
-@code 
-{
-    string loggedInEmail;
-    string pageUrl = "users";
-    Module parentPage = new Module();
-    Module thisPage = new Module();
-    string modalTitle = "Add User";
-    bool isEditing = true;
-    User user = new IMSClassLibrary.Models.User()
-    {
-        CreatedBy = "Admin",
-        ModifiedBy = "Admin ",
-        Status = "active",
-        Password="password"
+@code {
 
-    };
-    List<IMSClassLibrary.Models.User> users = new List<User>();
-    List<Department> departments = new List<Department>();
+    private List<User> users = new List<User>();
+    private string modalTitle = "Add User";
+    private SystemDbContext _context;
+    private List<string> departmentList = new List<string>();
+
+    private UserRepository _userRepository;
+    private User user = new User()
+        {
+            CreatedBy = "Admin",
+            ModifiedBy = "Admin ",
+            Status = "Active"
 
 
+        };
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        users = userRepository.GetAll().Data;
-        this.user.CreatedBy = loggedInEmail;
-        resetModel();
+        InitializeDbContext();
+        LoadUsers();
+        LoadDepartments();
 
-        string Remail = httpContextAccessor.HttpContext.Session.GetString("email");
-        var result = userRepository.Get(Remail);
+    }
 
-        if (result.IsSuccessful)
+    private void InitializeDbContext()
+    {
+        _context = ServiceProvider.GetRequiredService<SystemDbContext>();
+        _userRepository = new UserRepository(_context);
+    }
+
+    private void LoadUsers()
+    {
+        Console.WriteLine("am up");
+        try
         {
-            httpContextAccessor.HttpContext.Session.SetString("email", result.Data.Email);
-            loggedInEmail = result.Data.Email;
-            thisPage = moduleRepository.Get(pageUrl).Data;
-            parentPage = moduleRepository.Get(thisPage.ParentId).Data;
+            users = _userRepository.GetAll();
+        }
+        catch (Exception ex)
+        {
+            // Handle error (e.g., show a message to the user)
+            Console.WriteLine(ex.Message);
+        }
+    }
 
-            if (!authorisation.authorize(result.Data.Id, pageUrl))
+    private async Task HandleValidSubmit()
+    {
+        await _userRepository.AddAsync(user); // Call the service method
+
+    }
+
+    private void saveUser()
+    {
+        user = _userRepository.Add(user);
+        LoadUsers();
+        Console.WriteLine("saving user");
+        ResetForm();
+    }
+
+    private void editUser(User usr)
+    {
+        user = usr; // Load the selected user details into the modal
+    }
+
+    private void ResetForm()
+    {
+        user = new User();
+        modalTitle = "Add User";
+    }
+
+    private void deleteUser(User usr)
+    {
+        user = usr;
+    }
+
+    private void completeDelete()
+    {
+        try
+        {
+            if (_userRepository.DeleteById(user.Id))
             {
-                UriHelper.NavigateTo("/");
+
+                ResetForm();
+                LoadUsers();
             }
         }
-        else
+        catch (Exception ex)
         {
-
+            // Handle error (e.g., show a message to the user)
+            Console.WriteLine(ex.Message);
         }
     }
-
-    void saveModule()
-    {
-        if (!isEditing)
-        { 
-            this.user.CreatedDate = DateTime.Now;
-            this.user.CreatedBy = loggedInEmail;
-            var resultObject = userRepository.Add(this.user);
-
-            if (resultObject.IsSuccessful)
-            {
-                NotificationService.ShowSuccess(resultObject.Message);
-            }
-            else
-            {
-
-                NotificationService.ShowError(resultObject.Message);
-            }
-        }
-        else
-        {
-            this.user.ModifiedDate = DateTime.Now;
-            this.user.ModifiedBy = loggedInEmail;
-            var resultObject = userRepository.Update(this.user);
-            if (resultObject.IsSuccessful)
-            {
-                NotificationService.ShowSuccess(resultObject.Message);
-            }
-            else
-            {
-                NotificationService.ShowError(resultObject.Message);
-            }
-        }
-        closeModal("addMenuModal");
-        resetModel();
+    private void updateUser()
+    { // Logic to update the user details
+        userRepository.Update(user);
+        ResetForm();
+        // Update the UI or refresh the user list
     }
 
-    private void editMenu(User mn)
+
+    private void LoadDepartments()
     {
-        isEditing = true;
-        this.modalTitle = "Edit User";
-        this.user = mn;
-        openModal("addMenuModal");
+        // Fetch the list of departments from your repository or context
+        departmentList = departmentRepository.GetAll().Select(d => d.Name).ToList();
+    }
+    private void ShowModal()
+    {
+        ResetForm();
+        // Use JavaScript interop to show the modal
+        js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
     }
 
-    void deleteMenu(User mn)
+    private void ShowModal1()
     {
-        this.user = mn;
-        openModal("deleteMenuModal");
+        ResetForm();
+        // Use JavaScript interop to show the modal
+        js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
     }
 
-    void completeDelete()
+    private void ShowModal2()
     {
-        var resultObject = (userRepository.DeleteById(user.Id));
-        if (resultObject.IsSuccessful)
-        {
-            resetModel();
-            closeModal("deleteMenuModal");
-            NotificationService.ShowSuccess(resultObject.Message);
-        }
-        else
-        {
-            NotificationService.ShowError(resultObject.Message);
-
-        }
+        // Use JavaScript interop to show the modal
+        js.InvokeVoidAsync("$('#exampleModallogin2').modal", "show");
     }
 
-    void resetModel()
-    {
-        departments = departmentRepository.GetAll();
-        this.users = userRepository.GetAll().Data;
-        this.modalTitle = "Add User";
-        this.user = new User()
-            {
-                CreatedBy =  loggedInEmail,
-                ModifiedBy = "Admin ",
-                Status = "active",
-                Password = "password"
-            };
-    }
-   
-    private async Task ShowNotification(string type, string message)
-    {
-        await js.InvokeVoidAsync(type + "_noti", message);
-    }
-
-    protected async Task openModal(string modalId)
-    {
-        await js.InvokeVoidAsync("openModal", modalId);
-    }
-
-    protected async Task closeModal(string modalId)
-    {
-        await js.InvokeVoidAsync("closeModal", modalId);
-    }
 }

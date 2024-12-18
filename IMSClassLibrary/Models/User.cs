@@ -15,8 +15,9 @@ namespace IMSClassLibrary.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+      
         public string DepartmentName { get; set; }
+        [Required]
         public int DepartmentId { get; set; }
 
 
