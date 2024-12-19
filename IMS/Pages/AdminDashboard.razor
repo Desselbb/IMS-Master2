@@ -1,5 +1,8 @@
 ﻿@page "/AdminDashboard"
-
+@using IMSClassLibrary.Models
+@using IMSClassLibrary.Repos
+@inject ProjectRepository projectRepository
+@inject UserRepository userRepository
 
 
 <body>
@@ -46,7 +49,7 @@
                                             <span class="f-light f-w-500 f-14">Total Project</span>
                                             <div class="project-details">
                                                 <div class="project-counter">
-                                                    <h2 class="f-w-600">1,523</h2><span class="f-12 f-w-400">(This month)</span>
+                                        <h2 class="f-w-600">@projectCount</h2><span class="f-12 f-w-400">(This month)</span>
                                                 </div>
                                                 <div class="product-sub bg-primary-light">
                                                     <svg class="invoice-icon">
@@ -71,10 +74,10 @@
                                 <div class="col-xl-3 col-sm-6">
                                     <div class="card o-hidden small-widget">
                                         <div class="card-body total-Progress border-b-warning border-2">
-                                            <span class="f-light f-w-500 f-14">In Progress</span>
+                                            <span class="f-light f-w-500 f-14">Users</span>
                                             <div class="project-details">
                                                 <div class="project-counter">
-                                                    <h2 class="f-w-600">836</h2><span class="f-12 f-w-400">(This month) </span>
+                                        <h2 class="f-w-600">@userCount</h2><span class="f-12 f-w-400">(This month) </span>
                                                 </div>
                                                 <div class="product-sub bg-warning-light">
                                                     <svg class="invoice-icon">
@@ -193,5 +196,32 @@
 
 
 </body>
+
+
+
+@code {
+    private int projectCount;
+    private int userCount;
+
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        LoadProjectCount();
+        LoadUserCount();
+
+    }
+
+    private void LoadProjectCount()
+    {
+        var projects = projectRepository.GetAll();
+        projectCount = projects.Count;
+    }
+    private void LoadUserCount()
+    {
+        var users = userRepository.GetAll();
+        userCount = users.Count;
+    }
+}
 
 

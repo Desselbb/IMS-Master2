@@ -1,1 +1,340 @@
-﻿
+﻿@page "/userProfiles"
+@using IMSClassLibrary.Models;
+@using IMSClassLibrary.Repos;
+@using IMS.Pages;
+@inject UserRepository userRepository
+@inject DepartmentRepository departmentRepository
+@inject ModuleRepository moduleRepository
+@inject Authorisation authorisation
+@inject NotificationService NotificationService;
+@inject NavigationManager UriHelper
+@inject IHttpContextAccessor httpContextAccessor;
+@using IMSClassLibrary.Context;
+@using Microsoft.EntityFrameworkCore
+@inject IServiceProvider ServiceProvider
+@inject IJSRuntime js
+
+<PageTitle>UserProfiles</PageTitle>
+<br />
+<div class="container-fluid">
+    <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3"><h2>UserProfiles</h2></div>
+        <div class="ms-auto">
+            <div class="btn-group">
+                <button class="btn btn-primary" @onclick="ShowModal" type="button" data-bs-toggle="modal" data-bs-target="#exampleModallogin">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div class="modal fade" id="exampleModallogin" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-sign-up">
+                <div class="modal-body social-profile text-start">
+                    <div class="modal-toggle-wrapper">
+                        <h3>Add UserProfile</h3>
+                        <p>Fill in your information below.</p>
+                        <EditForm Model="@userProfile" OnValidSubmit="saveUserProfile" class="row g-3">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="col-md-12">
+                                <label>User Name</label>
+                                <InputSelect @bind-Value="userProfile.UserId" class="form-control">
+                                    <option value="0" disabled>Select User</option>
+                                    @foreach (var usr in users)
+                                    {
+                                        <option value="@usr.Id">@usr.FirstName @usr.LastName</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => userProfile.UserId)" />
+                            </div>
+
+                            <div class="col-md-12">
+                                <label>Profile Name</label>
+                                <InputSelect @bind-Value="userProfile.ProfileId" class="form-control">
+                                    <option value="0" disabled>Select Profile</option>
+                                    @foreach (var pr in profiles)
+                                    {
+                                        <option value="@pr.Id">@pr.Name</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => userProfile.ProfileId)" />
+                            </div>
+
+                            
+
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit</button>
+                            </div>
+                        </EditForm>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Departments Table -->
+    <div class="col-sm-12">
+        <div class="table-responsive mt-4 mt-xl-0">
+            <table class="table table-success table-striped table-nowrap align-middle mb-0">
+                <thead>
+                    <tr class="border-bottom-primary">
+                        <th>#</th>
+                        <th>User Name</th>
+                        <th>Profile Name</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int count = 1;
+                    }
+                    @foreach (var up in userProfiles)
+                    {
+                        <tr class="border-bottom-success">
+                            <td>@count</td>
+                            <td> @up.User.FirstName @up.User.LastName <br /><small><small>@up.User.Email</small></small></td>
+                            <td> @up.Profile.Name </td>
+                            <td> @up.Status </td>
+                            <td>
+                                <a href="#" title="Edit" @onclick="@(() => editUserProfile(up))" class="edit" data-bs-toggle="modal" data-bs-target="#editModal">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </a>
+                                <a href="#" title="Delete" @onclick="@(() => deleteUserProfile(up))" class="delete" data-bs-toggle="modal" data-bs-target="#exampleModallogin2">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+
+
+    <div class="modal fade" id="exampleModallogin2" tabindex="-1" role="dialog" aria-labelledby="exampleModallogin2" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-sign-up">
+
+                <div class="modal-toggle-wrapper">
+                    <h5 class="modal-title" id="exampleModalLongTitle"> <i class="lni lni-trash"></i> Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body social-profile text-start">
+                    <label>Are you sure you want to delete this Department?</label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="lni lni-close"></i> Close</button>
+                    <button @onclick="completeDelete" type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="lni lni-trash"></i> Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content dark-sign-up">
+            <div class="modal-body social-profile text-start">
+                <div class="modal-toggle-wrapper">
+                    <h3>Edit UserProfile</h3>
+                    <p>Update your information below.</p>
+
+                    <EditForm Model="@userProfile" OnValidSubmit="updateUserProfile" class="row g-3">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="col-md-12">
+                            <label>User Name</label>
+                            <InputSelect @bind-Value="userProfile.UserId" class="form-control">
+                                <option value="0">Select User</option>
+                                @foreach (var usr in users)
+                                {
+                                    <option value="@usr.Id">@usr.FirstName @usr.LastName</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Profile Name</label>
+                            <InputSelect @bind-Value="userProfile.ProfileId" class="form-control">
+                                <option value="0">Select Profile</option>
+
+                                @foreach (var pr in profiles)
+                                {
+                                    <option value="@pr.Id">@pr.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit</button>
+                        </div>
+
+
+
+
+
+
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+@code {
+
+    private List<UserProfile> userProfiles = new List<UserProfile>();
+    private string modalTitle = "Add UserProfile";
+    private SystemDbContext _context;
+    private List<User> users = new List<User>();
+
+    private List<Profile> profiles = new List<Profile>();
+
+    private ProfileRepository _profileRepository;
+    private UserRepository _userRepository;
+    private UserProfileRepository _userProfileRepository;
+
+    private UserProfile userProfile = new UserProfile()
+        {
+            CreatedBy = "Admin",
+            ModifiedBy = "Admin ",
+            Status = "Active"
+
+
+        };
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        InitializeDbContext();
+        LoadUserProfiles();
+        LoadProfiles();
+        LoadUsers();
+
+
+    }
+
+    private void InitializeDbContext()
+    {
+        _context = ServiceProvider.GetRequiredService<SystemDbContext>();
+        _userProfileRepository = new UserProfileRepository(_context);
+        _profileRepository = new ProfileRepository(_context);
+        _userRepository = new UserRepository(_context);
+
+    }
+
+    private void LoadUserProfiles()
+    {
+        Console.WriteLine("am up");
+        try
+        {
+            userProfiles = _userProfileRepository.GetAll();
+        }
+        catch (Exception ex)
+        {
+            // Handle error (e.g., show a message to the user)
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await _userProfileRepository.AddAsync(userProfile); // Call the service method
+
+    }
+
+    private void saveUserProfile()
+    {
+        userProfile = _userProfileRepository.Add(userProfile);
+        LoadUserProfiles();
+        Console.WriteLine("yoooo");
+        ResetForm();
+    }
+
+    private void editUserProfile(UserProfile userPro)
+    {
+        userProfile = userPro; // Load the selected userProfile details into the modal
+    }
+
+    private void ResetForm()
+    {
+        userProfile = new UserProfile();
+        modalTitle = "Add UserProfile";
+    }
+
+    private void deleteUserProfile(UserProfile userPro)
+    {
+        userProfile = userPro;
+    }
+
+    private void completeDelete()
+    {
+        try
+        {
+            if (_userProfileRepository.DeleteById(userProfile.Id))
+            {
+
+                ResetForm();
+                LoadUserProfiles();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle error (e.g., show a message to the user)
+            Console.WriteLine(ex.Message);
+        }
+    }
+    private void updateUserProfile()
+    { // Logic to update the userProfile details
+        _userProfileRepository.Update(userProfile);
+        ResetForm();
+        // Update the UI or refresh the userProfile list
+    }
+    private void LoadProfiles()
+    {
+        // Fetch the list of profiles from your repository or context
+        profiles = _profileRepository.GetAll().ToList();
+    }
+    private void LoadUsers()
+    {
+        // Fetch the list of profiles from your repository or context
+        users = _userRepository.GetAll().ToList();
+    }
+
+
+    private void ShowModal()
+    {
+        // Use JavaScript interop to show the modal
+        js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
+    }
+
+    private void ShowModal2()
+    {
+        // Use JavaScript interop to show the modal
+        js.InvokeVoidAsync("$('#exampleModallogin2').modal", "show");
+    }
+
+    private void CloseModal(string modalId)
+    {
+        js.InvokeVoidAsync($"$('#{modalId}').modal", "hide");
+    }
+}

@@ -9,6 +9,9 @@
 @inject UserRepository userRepository
 @inject NotificationService NotificationService
 @inject IHttpContextAccessor httpContextAccessor
+@using IMSClassLibrary.Context;
+@using Microsoft.EntityFrameworkCore
+@inject IServiceProvider ServiceProvider
 @layout LoginLayout
 
 <PageTitle>Login</PageTitle>
@@ -34,8 +37,8 @@
 
                             <div class="card-body p-4">
                                 <div class="text-center mt-2">
-                                    <h5 class="text-primary">Create New Account</h5>
-                                    <p class="text-muted">Get your free velzon account now</p>
+                                    <h5 class="text-primary">Intern Information System</h5>
+                                    
                                 </div>
                                 <div class="p-2 mt-4">
                                    
@@ -62,9 +65,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="mb-4">
-                                            <p class="mb-0 fs-12 text-muted fst-italic">By registering you agree to the Velzon <a href="#" class="text-primary text-decoration-underline fst-normal fw-medium">Terms of Use</a></p>
-                                        </div>
+                                       
 
                                         <div id="password-contain" class="p-3 bg-light mb-2 rounded">
                                             <h5 class="fs-13">Password must contain:</h5>
@@ -87,10 +88,6 @@
                         </div>
                         <!-- end card -->
 
-                        <div class="mt-4 text-center">
-                            <p class="mb-0">Already have an account ? <a href="auth-signin-basic.html" class="fw-semibold text-primary text-decoration-underline"> Signin </a> </p>
-                        </div>
-
                     </div>
                 </div>
                 <!-- end row -->
@@ -106,57 +103,83 @@
 
 @code {
     private User user = new User();
+    private List<User> users = new List<User>
+{
+    new User { Id = 1, FirstName = "John", LastName = "Doe", Email = "john.doe@example.com", Password = "password123", DepartmentName = "IT", Nrc = "12345678", Address = "123 Main St", CreatedBy = "Admin", ModifiedBy = "Admin", CreatedDate = DateTime.Now, ModifiedDate = DateTime.Now },
+    new User { Id = 2, FirstName = "Jane", LastName = "Smith", Email = "jane.smith@example.com", Password = "Password456!", DepartmentName = "HR", Nrc = "87654321", Address = "456 Elm St", CreatedBy = "Admin", ModifiedBy = "Admin", CreatedDate = DateTime.Now, ModifiedDate = DateTime.Now },
+    new User { Id = 3, FirstName = "Blessed", LastName = "Simalimbu", Email = "blessedsimalimbu@gmail.com", Password = "Simalimbu123!", DepartmentName = "IT", Nrc = "98765432", Address = "789 Oak St", CreatedBy = "Admin", ModifiedBy = "Admin", CreatedDate = DateTime.Now, ModifiedDate = DateTime.Now }
+
+    // Add more users as needed
+};
+
     private string errorMessage;
+    private UserRepository _userRepository;
+    private SystemDbContext _context;
 
     protected override void OnInitialized()
+{
+    base.OnInitialized();
+    ResetUser(); // Ensure the user object is initialized
+}
+
+private void ResetUser()
+{
+    user = new User
     {
-        base.OnInitialized();
+        CreatedBy = "",
+        ModifiedBy = "",
+        CreatedDate = DateTime.Now,
+        ModifiedDate = DateTime.Now,
+        FirstName = "",
+        LastName = ""
+    };
+}
+private void InitializeDbContext()
+{
+    if (ServiceProvider != null)
+    {
+        _context = ServiceProvider.GetRequiredService<SystemDbContext>();
+        _userRepository = new UserRepository(_context);
+    }
+    else
+    {
+        Console.WriteLine("ServiceProvider is null");
+    }
+}
+
+
+   private void Login()
+{
+    var foundUser = users.FirstOrDefault(u => u.Email == user.Email && u.Password == user.Password);
+    
+    if (foundUser != null)
+    {
+        Console.WriteLine("Login succeeded");
+        httpContextAccessor.HttpContext.Session.SetString("email", foundUser.Email);
+        // Redirect to the dashboard or another page after successful login
+        UriHelper.NavigateTo("AdminDashboard");
+    }
+    else
+    {
+        Console.WriteLine("Invalid email or password.");
         ResetUser();
+        errorMessage = "Invalid email or password.";
     }
-
-    private void ResetUser()
+}
+ private void LoadUsers()
     {
-        user = new User
-        {
-            CreatedBy = "",
-            ModifiedBy = "",
-            CreatedDate = DateTime.Now,
-            ModifiedDate = DateTime.Now,
-            FirstName = "",
-            LastName = ""
-        };
-    }
-
-    private async Task Login()
-    {
+        Console.WriteLine("am up");
         try
         {
-            // Validate the password using ASP.NET Identity
-            var result = await SignInManager.PasswordSignInAsync(user.Email, user.Password, isPersistent: false, lockoutOnFailure: false);
-
-            if (result.Succeeded)
-            {
-                Console.WriteLine("Login succeeded");
-                httpContextAccessor.HttpContext.Session.SetString("email", user.Email);
-                // Redirect to the dashboard or another page after successful login
-                UriHelper.NavigateTo("AdminDashboard");
-            }
-            else if (result.IsLockedOut)
-            {
-                Console.WriteLine(errorMessage);
-                errorMessage = "Your account has been locked. Please try again later.";
-            }
-            else
-            {
-                Console.WriteLine(errorMessage);
-                ResetUser();
-                errorMessage = "Invalid email or password.";
-            }
+            users = _userRepository.GetAll();
         }
         catch (Exception ex)
         {
-            errorMessage = $"An unexpected error occurred: {ex.Message}";
-            Console.WriteLine(errorMessage);
+            // Handle error (e.g., show a message to the user)
+            Console.WriteLine(ex.Message);
         }
     }
+   
+
+
 }

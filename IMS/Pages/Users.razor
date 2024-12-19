@@ -86,6 +86,13 @@
                                 <ValidationMessage For="@(() => user.Address)" />
                             </div>
 
+                            <div class="col-md-12">
+                                <label for="imageUpload" class="form-label">Upload Image</label>
+                                <InputFile @bind-Value="user.ImagePath" OnChange="HandleFileSelected" />
+                                <ValidationMessage For="@(() => user.ImagePath)" />
+
+                            </div>
+
                             <div class="col-12">
                                 <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit</button>
                             </div>
@@ -235,6 +242,13 @@
                             <ValidationMessage For="@(() => user.Address)" />
                         </div>
 
+                        <div class="col-md-12"> 
+                            <label for="imageUpload" class="form-label">Upload Image</label>
+                            <InputFile OnChange="HandleFileSelected" /> 
+                            <ValidationMessage For="@(() => user.ImagePath)" /> 
+
+                         </div>
+
                         <div class="col-12">
                             <button class="btn btn-primary" type="submit" data-bs-dismiss="modal">Submit</button>
                         </div>
@@ -258,6 +272,7 @@
     private string modalTitle = "Add User";
     private SystemDbContext _context;
     private List<string> departmentList = new List<string>();
+
 
     private UserRepository _userRepository;
     private User user = new User()
@@ -296,6 +311,24 @@
             Console.WriteLine(ex.Message);
         }
     }
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File; var filePath = Path.Combine("wwwroot/images", file.Name);
+        // Create directory if not exists 
+        if (!Directory.Exists("wwwroot/images"))
+          { 
+              Directory.CreateDirectory("wwwroot/images");
+            Console.WriteLine("ive added picture");
+          }
+          // Save the file to the specified path 
+
+          using (var stream = new FileStream(filePath, FileMode.Create)) {
+              await file.OpenReadStream().CopyToAsync(stream); 
+          }
+
+          // Set the ImagePath property to the path of the saved file 
+          user.ImagePath = $"images/{file.Name}";
+      }
 
     private async Task HandleValidSubmit()
     {
@@ -307,13 +340,14 @@
     {
         user = _userRepository.Add(user);
         LoadUsers();
-        Console.WriteLine("saving user");
+        Console.WriteLine("yoooo");
         ResetForm();
     }
 
     private void editUser(User usr)
     {
         user = usr; // Load the selected user details into the modal
+        Console.WriteLine("ive edited");
     }
 
     private void ResetForm()
@@ -325,6 +359,7 @@
     private void deleteUser(User usr)
     {
         user = usr;
+        Console.WriteLine("ive deleted");
     }
 
     private void completeDelete()
@@ -350,23 +385,14 @@
         ResetForm();
         // Update the UI or refresh the user list
     }
-
-
     private void LoadDepartments()
     {
         // Fetch the list of departments from your repository or context
         departmentList = departmentRepository.GetAll().Select(d => d.Name).ToList();
     }
+
     private void ShowModal()
     {
-        ResetForm();
-        // Use JavaScript interop to show the modal
-        js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
-    }
-
-    private void ShowModal1()
-    {
-        ResetForm();
         // Use JavaScript interop to show the modal
         js.InvokeVoidAsync("$('#exampleModallogin').modal", "show");
     }
@@ -377,4 +403,8 @@
         js.InvokeVoidAsync("$('#exampleModallogin2').modal", "show");
     }
 
+    private void CloseModal(string modalId)
+    {
+        js.InvokeVoidAsync($"$('#{modalId}').modal", "hide");
+    }
 }
